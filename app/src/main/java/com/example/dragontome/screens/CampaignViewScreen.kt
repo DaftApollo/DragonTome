@@ -9,14 +9,21 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
@@ -25,6 +32,7 @@ import androidx.compose.material.Tab
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
@@ -42,14 +50,17 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -70,9 +81,13 @@ import com.example.dragontome.R
 import com.example.dragontome.data.Campaign
 import com.example.dragontome.data.CampaignMember
 import com.example.dragontome.data.FirebaseObject
+import com.example.dragontome.data.Message
 import com.example.dragontome.state.CampaignViewModel
+import com.example.dragontome.ui.theme.primaryContainerLight
 import com.example.dragontome.ui.theme.primaryLight
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
@@ -89,7 +104,6 @@ fun CampaignViewScreen(firebaseObject: FirebaseObject, viewModel: CampaignViewMo
     var navController:NavHostController = rememberNavController()
 
     val campaign by viewModel.campaign.collectAsStateWithLifecycle()
-
     SideEffect {
         Log.d("debug", "Within the CampaignViewScreen. Current value of the campaign: ${campaign.toString()}")
     }
@@ -114,7 +128,7 @@ fun CampaignViewScreen(firebaseObject: FirebaseObject, viewModel: CampaignViewMo
                     modifier = Modifier.padding(innerPadding)
                 ) {
                     composable(route = CampaignViewScreens.ROLLS_AND_CHAT.name) {
-                        CampaignChat(viewModel = viewModel)
+                        CampaignChat(campaign = campaign!!, firebaseObject = firebaseObject, viewModel = viewModel)
                     }
                     composable(route = CampaignViewScreens.CHARACTERS.name) {
                         CampaignCharacterOverview(viewModel = viewModel)
@@ -208,9 +222,98 @@ fun CampaignNavBar(navController: NavHostController) {
     }
 }
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun CampaignChat(viewModel: CampaignViewModel){
+fun CampaignChat(campaign: Campaign, firebaseObject: FirebaseObject, viewModel: CampaignViewModel) {
 
+    var flag by remember {
+        mutableStateOf(false)
+    }
+
+   SideEffect {
+        if (campaign.chatLog.isNotEmpty()) {
+            campaign.chatLog = campaign.chatLog.sortedBy { it.timeStamp }
+        }
+    }
+
+    LaunchedEffect(key1 = null) {
+        refreshChat(everySecond = {
+            flag = !flag
+            Log.d("debug","State of flag: ${flag}")
+        })
+    }
+
+    Log.d("debug", "Printed chatlog")
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+
+        val state = rememberLazyListState()
+        val coroutineScope = rememberCoroutineScope()
+
+        LazyColumn(modifier = Modifier.fillMaxHeight(0.80f), state = state) {
+            flag = flag
+            items(campaign.chatLog) { message ->
+                MessageItem(message = message, campaign = campaign, firebaseObject = firebaseObject)
+            }
+
+        }
+            coroutineScope.launch { state.scrollToItem(index = state.layoutInfo.totalItemsCount) }
+//TODO: Add logic to not scroll to bottom if the user has scrolled up to view previous messages. Getting pulled down all the time while trying to view previous messages is fucking annoying
+
+    var text by remember {
+        mutableStateOf("")
+    }
+    TextField(
+        value = text,
+        onValueChange = { text = it },
+        shape = RoundedCornerShape(10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp)
+            .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(10.dp)),
+        trailingIcon = {
+            IconButton(onClick = {
+               if(text != "") {
+                    SendMessage(
+                        campaign,
+                        firebaseObject,
+                        Message(userID = firebaseObject.currentUser!!.uid, text = text)
+                    )
+                    text = ""
+                }
+            }) {
+                Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = "Send")
+            }
+        },
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
+        keyboardActions = KeyboardActions(onGo = {
+            if(text != ""){
+                SendMessage(
+                    campaign,
+                    firebaseObject,
+                    Message(userID = firebaseObject.currentUser!!.uid, text = text)
+                )
+                text = ""
+            }
+        })
+    )
+}
+}
+
+fun SendMessage(campaign: Campaign, firebaseObject: FirebaseObject, message: Message){
+    campaign.chatLog = campaign.chatLog.plus(message)
+    updateCampaign(campaign, firebaseObject)
+}
+
+suspend fun refreshChat(everySecond:() -> Unit){
+    delay(1000)
+    Log.d("debug", "Delayed function")
+    everySecond()
+    refreshChat(everySecond)
 }
 
 @Composable
@@ -303,7 +406,9 @@ fun CampaignSettings(campaign: Campaign, firebaseObject: FirebaseObject){
                     .height(60.dp)
                     .padding(20.dp))
 
-                IconButton(onClick = { expanded = true }, modifier = Modifier.size(size = 20.dp).border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(4.dp))) {
+                IconButton(onClick = { expanded = true }, modifier = Modifier
+                    .size(size = 20.dp)
+                    .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(4.dp))) {
                     Icon(imageVector = Icons.Filled.Menu, contentDescription = "Change DM to...", modifier = Modifier.size(20.dp))
                 }
 
@@ -334,6 +439,41 @@ fun CampaignSettings(campaign: Campaign, firebaseObject: FirebaseObject){
 
     }
 
+}
+
+@Composable
+fun MessageItem(message:Message, campaign: Campaign, firebaseObject: FirebaseObject){
+    val user = getMemberProfile(campaign, memberID = message.userID)
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = if(message.userID == firebaseObject.currentUser!!.uid) Arrangement.End else Arrangement.Start) {
+        Card(modifier = Modifier
+            .padding(10.dp)
+            .border(width = 1.dp, color = Color.DarkGray, shape = RoundedCornerShape(8.dp)), shape = RoundedCornerShape(8.dp), colors = CardDefaults.cardColors(containerColor = primaryContainerLight)) {
+            Column(modifier =Modifier.padding(horizontal = 5.dp)) {
+                if (user != null) {
+                    Text(
+                        text = (if (user.nickname != null) user.nickname else user.userID)!!,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        textAlign = if(message.userID == firebaseObject.currentUser!!.uid) TextAlign.End else TextAlign.Left,
+                        modifier = if(message.userID == firebaseObject.currentUser!!.uid) Modifier.align(alignment = Alignment.End) else Modifier.align(alignment = Alignment.Start)
+
+                    )
+                } else {
+                    Text(text = "User Not Found", fontStyle = FontStyle.Italic)
+                }
+                Text(
+                    text = message.text,
+                    fontSize = 16.sp,
+                    modifier = if(message.userID == firebaseObject.currentUser!!.uid) Modifier
+                        .padding(end = 10.dp)
+                        .align(alignment = Alignment.End) else Modifier
+                        .padding(start = 10.dp)
+                        .align(alignment = Alignment.Start),
+                    textAlign = if(message.userID == firebaseObject.currentUser!!.uid) TextAlign.End else TextAlign.Left,
+                )
+            }
+        }
+    }
 }
 
 @Composable

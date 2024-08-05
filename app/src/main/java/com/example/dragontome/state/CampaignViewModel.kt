@@ -29,7 +29,7 @@ class CampaignViewModel(fireBaseObject:FirebaseObject): ViewModel() {
             }
             if (snapshot != null) {
                 _campaign.value = snapshot.toObject<Campaign>()!!
-
+                Log.d("debug", "Campaign Updated")
                // Log.d("debug", "Should have updated the campaign: ${campaign.toString()}")
             }
 

@@ -4,6 +4,5 @@ import android.media.Image
 
 data class CampaignMember(
     val userID: String = "",
-    var nickname: String? = null,
-    var image: Image? = null
+    var nickname: String? = null
 )
