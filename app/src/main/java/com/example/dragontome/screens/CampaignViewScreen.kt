@@ -80,6 +80,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.dragontome.R
 import com.example.dragontome.data.Campaign
 import com.example.dragontome.data.CampaignMember
+import com.example.dragontome.data.DiceRollerObject
 import com.example.dragontome.data.FirebaseObject
 import com.example.dragontome.data.Message
 import com.example.dragontome.state.CampaignViewModel
@@ -305,7 +306,12 @@ fun CampaignChat(campaign: Campaign, firebaseObject: FirebaseObject, viewModel: 
 }
 
 fun SendMessage(campaign: Campaign, firebaseObject: FirebaseObject, message: Message){
+    val diceRoller:DiceRollerObject = DiceRollerObject
     campaign.chatLog = campaign.chatLog.plus(message)
+    Log.d("debug", "${diceRoller.validateWholeMessage(message.text)}")
+    if(diceRoller.validateWholeMessage(message.text)){
+        message.text = diceRoller.doRoll(message.text)
+    }
     updateCampaign(campaign, firebaseObject)
 }
 

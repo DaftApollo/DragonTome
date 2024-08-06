@@ -90,6 +90,8 @@ dependencies {
     implementation("com.google.gms:google-services:4.4.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.3")
 
+    implementation ("net.objecthunter:exp4j:0.4.8")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

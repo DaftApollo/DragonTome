@@ -5,6 +5,6 @@ import kotlin.time.TimeSource
 
 data class Message(
     val userID: String = "",
-    val text: String = "",
+    var text: String = "",
     val timeStamp: Long = System.currentTimeMillis()
 )
