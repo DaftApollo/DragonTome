@@ -34,48 +34,56 @@ object DiceRollerObject {
 
     fun doRoll(string:String):String{
         var roll:String = string
-        var matches = Regex(pattern = "(?:\\d*d\\d+)").findAll(string)
+        roll = roll.replace(Regex(pattern = "r|o|l|\\/|\\\\|\\."), "")
+        Log.d("debug", roll)
+        Log.d("debug", "${validateWholeMessage(roll)}")
+        if (validateWholeMessage(roll)){
+            var matches = Regex(pattern = "(?:\\d*d\\d+)").findAll(string)
 
-        for (match in matches){
+            for (match in matches){
 
-            val dIndex = match.value.indexOf('d')
-            var diceAmount: Int
-            var dieFaces:Int
+                val dIndex = match.value.indexOf('d')
+                var diceAmount: Int
+                var dieFaces:Int
+
+                try {
+                    diceAmount = match.value.slice(0..dIndex-1).toInt()
+                }catch (e:Exception){diceAmount = 1}
+
+                dieFaces = match.value.slice(dIndex + 1..match.value.length - 1).toInt()
+
+                var rollSequence = "("
+
+                if(diceAmount > 100){
+                    diceAmount = 100
+                }
+                for(i in 0..diceAmount - 1){
+                    Log.d("debug", "DiceAmount: $diceAmount, DieFaces: $dieFaces")
+                    rollSequence = rollSequence + getRollResult(dieFaces).toString()
+                    if(i < diceAmount - 1){
+                        rollSequence = rollSequence + " + "
+                    }
+                    else{
+                        rollSequence = rollSequence + ")"
+                    }
+                }
+
+                roll = roll.replaceFirst(match.value, rollSequence)
+            }
+            Log.d("debug", roll)
 
             try {
-                diceAmount = match.value.slice(0..dIndex-1).toInt()
-            }catch (e:Exception){diceAmount = 1}
-
-            dieFaces = match.value.slice(dIndex + 1..match.value.length - 1).toInt()
-
-            var rollSequence = "("
-
-            if(diceAmount > 100){
-                diceAmount = 100
+                val result = ExpressionBuilder(roll).build().evaluate().toInt()
+                roll = roll + " = $result"
+            }catch (e:Exception){
             }
-            for(i in 0..diceAmount - 1){
-                Log.d("debug", "DiceAmount: $diceAmount, DieFaces: $dieFaces")
-                rollSequence = rollSequence + getRollResult(dieFaces).toString()
-                if(i < diceAmount - 1){
-                    rollSequence = rollSequence + " + "
-                }
-                else{
-                    rollSequence = rollSequence + ")"
-                }
-            }
-
-            roll = roll.replaceFirst(match.value, rollSequence)
-        }
-        Log.d("debug", roll)
-
-        try {
-            val result = ExpressionBuilder(roll).build().evaluate()
-            roll = roll + " = $result"
-        }catch (e:Exception){
+            return roll
+        } else{
+            return "Error: tried rolling $roll"
         }
 
 
-        return roll
+
     }
 
 }

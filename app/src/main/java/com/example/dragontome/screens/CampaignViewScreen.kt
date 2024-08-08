@@ -8,6 +8,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,6 +34,7 @@ import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
@@ -65,6 +67,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -255,7 +258,7 @@ fun CampaignChat(campaign: Campaign, firebaseObject: FirebaseObject, viewModel: 
         val state = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
 
-        LazyColumn(modifier = Modifier.fillMaxHeight(0.80f), state = state) {
+        LazyColumn(modifier = Modifier.fillMaxHeight(0.80f), state = state, contentPadding = PaddingValues(10.dp)) {
             flag = flag
             items(campaign.chatLog) { message ->
                 MessageItem(message = message, campaign = campaign, firebaseObject = firebaseObject)
@@ -307,11 +310,14 @@ fun CampaignChat(campaign: Campaign, firebaseObject: FirebaseObject, viewModel: 
 
 fun SendMessage(campaign: Campaign, firebaseObject: FirebaseObject, message: Message){
     val diceRoller:DiceRollerObject = DiceRollerObject
-    campaign.chatLog = campaign.chatLog.plus(message)
-    Log.d("debug", "${diceRoller.validateWholeMessage(message.text)}")
-    if(diceRoller.validateWholeMessage(message.text)){
-        message.text = diceRoller.doRoll(message.text)
+
+    if(diceRoller.detectRoll(message.text)){
+            message.isRoll = true
+            message.text = diceRoller.doRoll(message.text)
     }
+
+    campaign.chatLog = campaign.chatLog.plus(message)
+
     updateCampaign(campaign, firebaseObject)
 }
 
@@ -345,6 +351,7 @@ fun CampaignSettings(campaign: Campaign, firebaseObject: FirebaseObject){
         Row (
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(horizontal = 10.dp)
                 .background(color = Color.White, shape = RoundedCornerShape(8.dp))
                 .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(8.dp)),
             verticalAlignment = Alignment.CenterVertically,
@@ -391,6 +398,7 @@ fun CampaignSettings(campaign: Campaign, firebaseObject: FirebaseObject){
 
             Row (modifier = Modifier
                 .fillMaxWidth()
+                .padding(horizontal = 10.dp)
                 .background(color = Color.White, shape = RoundedCornerShape(8.dp))
                 .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(8.dp)),
                 verticalAlignment = Alignment.CenterVertically,
@@ -441,6 +449,54 @@ fun CampaignSettings(campaign: Campaign, firebaseObject: FirebaseObject){
                     )
                 }
             }
+
+            Row (modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 10.dp)
+                .background(color = Color.White, shape = RoundedCornerShape(8.dp))
+                .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(8.dp)),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                var email by remember {
+                    mutableStateOf("")
+                }
+
+                Text(text = "Invite Player:", modifier = Modifier
+                    .fillMaxWidth(0.25f)
+                    .height(60.dp)
+                    .border(
+                        width = 1.dp,
+                        color = Color.Black,
+                        shape = RoundedCornerShape(
+                            topStart = 8.dp,
+                            topEnd = 0.dp,
+                            bottomStart = 8.dp,
+                            bottomEnd = 0.dp
+                        )
+                    )
+                    .padding(horizontal = 20.dp, vertical = 5.dp),
+                    minLines = 2)
+
+                androidx.compose.material3.TextField(
+                    value = email,
+                    onValueChange = {email = it},
+                    placeholder = { Text(text = "Player email")},
+                    colors = TextFieldDefaults.colors(unfocusedPlaceholderColor = Color.LightGray, unfocusedContainerColor = Color.White, focusedContainerColor = Color.LightGray),
+                    trailingIcon = {
+                        IconButton(onClick = { firebaseObject.addUserToCampaign(email, campaignCode = campaign.ID, campaign = campaign, onSuccess = { updateCampaign(campaign, firebaseObject)}) }) {
+                            Icon(imageVector = Icons.Filled.Search, contentDescription = "Add")
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
+                    keyboardActions = KeyboardActions(onGo = {firebaseObject.addUserToCampaign(email, campaignCode = campaign.ID, campaign = campaign, onSuccess = { updateCampaign(campaign, firebaseObject)})}),
+                    singleLine = true
+
+                )
+
+
+            }
+
         }
 
     }
@@ -452,18 +508,27 @@ fun MessageItem(message:Message, campaign: Campaign, firebaseObject: FirebaseObj
     val user = getMemberProfile(campaign, memberID = message.userID)
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = if(message.userID == firebaseObject.currentUser!!.uid) Arrangement.End else Arrangement.Start) {
         Card(modifier = Modifier
-            .padding(10.dp)
+            .padding(vertical = 5.dp)
             .border(width = 1.dp, color = Color.DarkGray, shape = RoundedCornerShape(8.dp)), shape = RoundedCornerShape(8.dp), colors = CardDefaults.cardColors(containerColor = primaryContainerLight)) {
             Column(modifier =Modifier.padding(horizontal = 5.dp)) {
                 if (user != null) {
-                    Text(
-                        text = (if (user.nickname != null) user.nickname else user.userID)!!,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        textAlign = if(message.userID == firebaseObject.currentUser!!.uid) TextAlign.End else TextAlign.Left,
-                        modifier = if(message.userID == firebaseObject.currentUser!!.uid) Modifier.align(alignment = Alignment.End) else Modifier.align(alignment = Alignment.Start)
+                    Row (horizontalArrangement = if(message.userID == firebaseObject.currentUser!!.uid) Arrangement.End else Arrangement.Start) {
+                        if(message.userID == firebaseObject.currentUser!!.uid && message.isRoll){
+                            Icon(painter = painterResource(id = R.drawable.role_playing), contentDescription = "Roll", Modifier.size(18.dp))
+                        }
+                        Text(
+                            text = (if (user.nickname != null) user.nickname else user.userID)!!,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            textAlign = if(message.userID == firebaseObject.currentUser!!.uid) TextAlign.End else TextAlign.Start
+                            //TODO: Get Username text alignment correct. Adding in a row to the column in order to put a roll icon for messages marked as rolls caused errors with previous alignment modifiers
+                        )
 
-                    )
+                        if(message.userID != firebaseObject.currentUser!!.uid && message.isRoll){
+                            Icon(painter = painterResource(id = R.drawable.role_playing), contentDescription = "Roll", Modifier.size(18.dp))
+                        }
+                    }
+
                 } else {
                     Text(text = "User Not Found", fontStyle = FontStyle.Italic)
                 }

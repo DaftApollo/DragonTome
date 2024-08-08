@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import java.util.concurrent.ThreadLocalRandom
@@ -24,7 +25,8 @@ object FirebaseObject {
             if(task.isSuccessful){
                 Log.d("debug", "createUserWithEmail: Success")
                 currentUser = auth.currentUser
-                firestoreDB.collection("users").document("${currentUser!!.uid}").set(User())
+                firestoreDB.collection("users").document("${currentUser!!.uid}")
+                    .set(User(email = email))
                 onSuccess()
             }
             else {
@@ -97,9 +99,8 @@ object FirebaseObject {
                 currentCampaign = randomId
                 Log.d("debug", "Campaign code list before calling the plus method: ${campaignCodes}")
                 campaignCodes = campaignCodes.plus(randomId)
-                val user = User(campaignList = campaignCodes)
-                Log.d("debug", "Campaign code list before calling updateUser: ${user.campaignList}")
-                updateUser(user)
+                Log.d("debug", "Campaign code list before calling updateUser: ${campaignCodes}")
+                updateUser()
             }
             .addOnFailureListener{
                 Log.d("debug", "Failure to create campaign")
@@ -108,10 +109,10 @@ object FirebaseObject {
 
 
 
-    fun updateUser(user: User){
+    fun updateUser(){
         if(currentUser != null){
-            firestoreDB.collection("users").document(currentUser!!.uid).set(user).addOnSuccessListener {
-                Log.d("debug", "Should have updated user ID ${currentUser!!.uid} with ${user.toString()}")
+            firestoreDB.collection("users").document(currentUser!!.uid).update("campaignList", campaignCodes).addOnSuccessListener {
+                Log.d("debug", "Should have updated user ID ${currentUser!!.uid}}")
             } .addOnFailureListener(){
                 Log.d("debug", "Failed to update user data")
             }
@@ -123,6 +124,26 @@ object FirebaseObject {
         auth.signOut()
         currentUser = null
         Log.d("debug", "Should have signed out. Current user: $currentUser, ${auth.currentUser}")
+    }
+
+    fun addUserToCampaign(email:String, campaignCode:String, campaign: Campaign, onSuccess: () -> Unit){
+        val query = firestoreDB.collection("users").whereEqualTo("email", email)
+            .get().addOnSuccessListener { documents ->
+                for (document in documents){
+                    document.reference.update("campaignList", FieldValue.arrayUnion(campaignCode))
+                    Log.d("debug", "Should have added a new user to campaign.")
+                    Log.d("debug", "Document ID: ${document.id}")
+                    campaign.membersIDs = campaign.membersIDs.plus(document.id)
+                    campaign.memberProfiles = campaign.memberProfiles.plus(CampaignMember(userID = document.id))
+
+                    Log.d("debug", "Should have updated relevant campaign fields")
+                    onSuccess()
+                }
+            }.addOnFailureListener{exception ->
+                Log.d("debug", exception.toString())
+            }
+
+
     }
 
 }

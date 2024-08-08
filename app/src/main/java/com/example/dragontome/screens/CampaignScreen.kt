@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -377,6 +378,17 @@ fun SignInScreen(
                 Text(text = "Password")
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = {
+                if(Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+                    if(password.length >= 6 && password.count(Char::isDigit) > 0 && password.count(Char::isUpperCase) > 0){
+                        errorType = ErrorType.NO_ERROR
+                        firebaseObject.signInUser(email, password, onFailure = {errorType = ErrorType.ACCOUNT_DOES_NOT_EXIST}, onSuccess = onSuccess)
+                    }
+                    else errorType = ErrorType.PASSWORD_INVALID
+                }
+                else errorType = ErrorType.EMAIL_INVALID
+
+            }),
             visualTransformation = PasswordVisualTransformation()
         )
         if(errorType == ErrorType.PASSWORD_INVALID){
@@ -587,7 +599,6 @@ fun CreateCampaignCard(firebaseObject: FirebaseObject, onSuccess: () -> Unit){
                             TextButton(onClick = {
                                 firebaseObject.createCampaign(campaignName)
                                 openCampaignCreationDialogue = false
-                                onSuccess()
                             }) {
                                 Text(text = "Create", color = Color.Black)
                             }
