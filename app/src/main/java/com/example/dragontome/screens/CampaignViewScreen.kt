@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -39,6 +40,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
@@ -284,6 +286,11 @@ fun CampaignChat(campaign: Campaign, firebaseObject: FirebaseObject, viewModel: 
     var text by remember {
         mutableStateOf("")
     }
+
+    var openRollInfoDialog by remember {
+        mutableStateOf(false)
+    }
+
     TextField(
         value = text,
         onValueChange = { text = it },
@@ -306,6 +313,11 @@ fun CampaignChat(campaign: Campaign, firebaseObject: FirebaseObject, viewModel: 
                 Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = "Send")
             }
         },
+        leadingIcon = {
+                      IconButton(onClick = { openRollInfoDialog = true }) {
+                          Icon(imageVector = Icons.Outlined.Info, contentDescription = "Rolling information")
+                      }
+        },
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
         keyboardActions = KeyboardActions(onGo = {
             if(text != ""){
@@ -318,7 +330,34 @@ fun CampaignChat(campaign: Campaign, firebaseObject: FirebaseObject, viewModel: 
             }
         })
     )
+
+        if (openRollInfoDialog){
+            RollInfoDialog(onDismissRequest = {openRollInfoDialog = false})
+        }
 }
+}
+
+@Composable
+fun RollInfoDialog(onDismissRequest: () -> Unit){
+    Dialog(onDismissRequest = onDismissRequest) {
+        Card (modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(16.dp)),
+            colors = CardDefaults.cardColors(containerColor = primaryLight, contentColor = Color.Black),
+            shape = RoundedCornerShape(16.dp)) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(10.dp)) {
+                Text(text = "How to do rolls:", textAlign = TextAlign.Center, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(text = "Rolls within chat can be performed by using the /roll command.", textAlign = TextAlign.Center)
+                Text(text = "To use the command, simply type /roll or one of its variants, followed by the roll(s).", textAlign = TextAlign.Center)
+                Text(text = "The roll command can be called by using a period(.) or either slash character(\\,/), followed by the letter r or the word 'roll'", textAlign = TextAlign.Center)
+                Text(text = "Rolls take the form of the common syntax [digit]d[digit], such as '4d6'.", textAlign = TextAlign.Center)
+                Text(text = "Multiple sets of dice can be rolled within a single command, such as  /roll 2d4 3d10", textAlign = TextAlign.Center)
+                Text(text = "Rolls can also be added or subtracted from each other: /roll d6 - 2d4", textAlign = TextAlign.Center)
+                Text(text = "Note that rolls cannot be combined with regular chat messages.", textAlign = TextAlign.Center)
+            }
+        }
+    }
 }
 
 fun SendMessage(campaign: Campaign, firebaseObject: FirebaseObject, message: Message){
@@ -606,7 +645,10 @@ fun MessageItem(message:Message, campaign: Campaign, firebaseObject: FirebaseObj
                 if (user != null) {
                     Row (horizontalArrangement = if(message.userID == firebaseObject.currentUser!!.uid) Arrangement.End else Arrangement.Start) {
                         if(message.userID == firebaseObject.currentUser!!.uid && message.isRoll){
-                            Icon(painter = painterResource(id = R.drawable.role_playing), contentDescription = "Roll", Modifier.size(18.dp))
+                            Icon(painter = painterResource(id = R.drawable.role_playing), contentDescription = "Roll",
+                                Modifier
+                                    .size(18.dp)
+                                    .offset(y = 3.dp))
                         }
                         Text(
                             text = (if (user.nickname != null) user.nickname else user.userID)!!,
@@ -617,7 +659,10 @@ fun MessageItem(message:Message, campaign: Campaign, firebaseObject: FirebaseObj
                         )
 
                         if(message.userID != firebaseObject.currentUser!!.uid && message.isRoll){
-                            Icon(painter = painterResource(id = R.drawable.role_playing), contentDescription = "Roll", Modifier.size(18.dp))
+                            Icon(painter = painterResource(id = R.drawable.role_playing), contentDescription = "Roll",
+                                Modifier
+                                    .size(18.dp)
+                                    .offset(y = 3.dp))
                         }
                     }
 
