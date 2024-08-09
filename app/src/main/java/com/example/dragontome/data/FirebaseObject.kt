@@ -145,5 +145,11 @@ object FirebaseObject {
 
 
     }
+    fun removeUserfromCampaign(userID:String, campaignCode:String){
+        firestoreDB.collection("users").document(userID).update("campaignList", FieldValue.arrayRemove(campaignCode))
+            .addOnSuccessListener {
+                Log.d("debug", "Should have removed a user from the campaign")
+            }
+    }
 
 }

@@ -29,12 +29,16 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MenuDefaults
 import androidx.compose.material.Tab
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
@@ -42,6 +46,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -73,6 +78,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.PopupProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavHost
@@ -192,15 +198,19 @@ fun CampaignNavBar(navController: NavHostController) {
     TabRow(selectedTabIndex = selectedItem, contentColor = Color.Black,
         containerColor = primaryLight,
         modifier = Modifier
+            .height(75.dp)
             .border(width = 2.dp, color = Color.DarkGray)
-            .height(50.dp)
+
     ) {
         Tab(selected = selectedItem == 0, onClick = {
             selectedItem = 0
             navController.navigate(CampaignViewScreens.ROLLS_AND_CHAT.name)
         },
-            modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+            modifier = Modifier
+                .height(75.dp)
+                .border(width = 1.dp, color = Color.LightGray)) {
             Text(text = "Rolls/Chat")
+            Icon(imageVector = Icons.Filled.Menu, contentDescription = "")
         }
         Tab(selected = selectedItem == 1, onClick = {
             selectedItem = 1
@@ -208,6 +218,7 @@ fun CampaignNavBar(navController: NavHostController) {
         },
             modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
             Text(text = "Characters")
+            Icon(imageVector = Icons.Filled.AccountCircle, contentDescription = "")
         }
         Tab(selected = selectedItem == 2, onClick = {
             selectedItem = 2
@@ -215,6 +226,7 @@ fun CampaignNavBar(navController: NavHostController) {
         },
             modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
             Text(text = "Notes")
+            Icon(imageVector = Icons.Filled.Edit, contentDescription = "")
         }
         Tab(selected = selectedItem == 3, onClick = {
             selectedItem = 3
@@ -222,6 +234,7 @@ fun CampaignNavBar(navController: NavHostController) {
         },
             modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
             Text(text = "Settings")
+            Icon(imageVector = Icons.Filled.Settings, contentDescription = "")
         }
     }
 }
@@ -413,7 +426,9 @@ fun CampaignSettings(campaign: Campaign, firebaseObject: FirebaseObject){
                     mutableStateOf(false)
                 }
 
-                var selectedUser:CampaignMember? = null
+                var selectedUser:CampaignMember? by remember {
+                    mutableStateOf(null)
+                }
 
                 Text(text = "Transfer DM status to... ", modifier = Modifier
                     .fillMaxWidth(0.85f)
@@ -426,16 +441,28 @@ fun CampaignSettings(campaign: Campaign, firebaseObject: FirebaseObject){
                     Icon(imageVector = Icons.Filled.Menu, contentDescription = "Change DM to...", modifier = Modifier.size(20.dp))
                 }
 
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    for (campaignMember in campaign.memberProfiles){
-                        if (firebaseObject.currentUser!!.uid != campaignMember.userID){
-                            androidx.compose.material3.DropdownMenuItem(
-                                text = { Text(text = if (campaignMember.nickname != null) campaignMember.nickname!! else campaignMember.userID, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                                onClick = {
-                                    selectedUser = campaignMember
-                                    openConfirmationDialog = true
-                                    expanded = false
-                                })
+                Box (contentAlignment = Alignment.TopEnd, modifier = Modifier.fillMaxWidth()) {
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.background(color = primaryContainerLight)
+                    ) {
+                        for (campaignMember in campaign.memberProfiles) {
+                            if (firebaseObject.currentUser!!.uid != campaignMember.userID && campaign.membersIDs.contains(campaignMember.userID)) {
+                                androidx.compose.material3.DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = if (campaignMember.nickname != null) campaignMember.nickname!! else campaignMember.userID,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    },
+                                    onClick = {
+                                        selectedUser = campaignMember
+                                        openConfirmationDialog = true
+                                        expanded = false
+                                    })
+                            }
                         }
                     }
                 }
@@ -494,7 +521,72 @@ fun CampaignSettings(campaign: Campaign, firebaseObject: FirebaseObject){
 
                 )
 
+            }
 
+            Row (modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp)
+                .background(color = Color.White, shape = RoundedCornerShape(8.dp))
+                .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(8.dp)),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+
+                var openKickConfirmationDialog by remember {
+                    mutableStateOf(false)
+                }
+
+                var expanded by remember {
+                    mutableStateOf(false)
+                }
+
+                var selectedUser:CampaignMember? by remember {
+                    mutableStateOf(null)
+                }
+
+                Text(text = "Kick User...", modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .height(60.dp)
+                    .padding(20.dp))
+
+                IconButton(onClick = { expanded = true }, modifier = Modifier
+                    .size(size = 20.dp)
+                    .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(4.dp))) {
+                    Icon(imageVector = Icons.Filled.Menu, contentDescription = "Kick Member", modifier = Modifier.size(20.dp))
+                }
+
+                Box (contentAlignment = Alignment.TopEnd, modifier = Modifier.fillMaxWidth()) {
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.background(color = primaryContainerLight)) {
+                        for (campaignMember in campaign.memberProfiles) {
+                            if (firebaseObject.currentUser!!.uid != campaignMember.userID && campaign.membersIDs.contains(campaignMember.userID)) {
+                                androidx.compose.material3.DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = if (campaignMember.nickname != null) campaignMember.nickname!! else campaignMember.userID,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    },
+                                    onClick = {
+                                        selectedUser = campaignMember
+                                        openKickConfirmationDialog = true
+                                        expanded = false
+                                    },
+                                    colors = androidx.compose.material3.MenuDefaults.itemColors(textColor = Color.Black))
+                            }
+                        }
+                    }
+                }
+
+                if(openKickConfirmationDialog){
+                    Log.d("debug", "Entered The kick confirmation. Selected user: ${selectedUser.toString()}")
+                    KickConfirmationDialogue(
+                        member = selectedUser,
+                        campaign = campaign,
+                        onDismissRequest = { openKickConfirmationDialog = false },
+                        firebaseObject = firebaseObject
+                    )
+                }
             }
 
         }
@@ -638,6 +730,68 @@ fun updateCampaign(campaign: Campaign, firebaseObject: FirebaseObject){
 }
 
 @Composable
+fun KickConfirmationDialogue(member: CampaignMember?, campaign: Campaign, onDismissRequest: () -> Unit, firebaseObject: FirebaseObject){
+    if(member != null){
+        Dialog(onDismissRequest = onDismissRequest) {
+            Card (modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(16.dp)),
+                colors = CardDefaults.cardColors(containerColor = primaryLight),
+                shape = RoundedCornerShape(16.dp)) {
+                Column (horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Are you sure you'd like to kick " + if (member!!.nickname != null) "${member!!.nickname}?" else "${member.userID}?",
+                        textAlign = TextAlign.Center, modifier = Modifier.padding(10.dp), color = Color.Black)
+
+                    Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically, modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 20.dp)
+                    ) {
+
+                        TextButton(onClick = {
+                            onDismissRequest()
+                        },
+                            modifier = Modifier
+                                .width(80.dp)
+                                .background(color = Color.White, shape = RoundedCornerShape(8.dp))
+                                .border(
+                                    width = 1.dp,
+                                    color = Color.LightGray,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                        ) {
+                            Text(text = "Cancel", color = Color.Red)
+                        }
+
+                        TextButton(onClick = {
+                            firebaseObject.removeUserfromCampaign(member.userID, campaignCode = campaign.ID)
+                            campaign.membersIDs = campaign.membersIDs.minus(member.userID)
+                            updateCampaign(campaign = campaign, firebaseObject = firebaseObject)
+                            onDismissRequest()
+                        },
+                            modifier = Modifier
+                                .width(80.dp)
+                                .background(color = Color.White, shape = RoundedCornerShape(8.dp))
+                                .border(
+                                    width = 1.dp,
+                                    color = Color.LightGray,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                        ) {
+                            Text(text = "Confirm", color = Color.Black)
+                        }
+                    }
+
+
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
 fun ConfirmationDialog(member: CampaignMember?, campaign: Campaign, onDismissRequest: () -> Unit, firebaseObject: FirebaseObject){
     if(member != null){
         Dialog(onDismissRequest = onDismissRequest) {
@@ -649,7 +803,7 @@ fun ConfirmationDialog(member: CampaignMember?, campaign: Campaign, onDismissReq
                 shape = RoundedCornerShape(16.dp)) {
                 Column (horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "Are you sure you'd like to transfer ownership of the campaign to." + if (member!!.nickname != null) "${member!!.nickname}" else "${member.userID}",
+                        text = "Are you sure you'd like to transfer ownership of the campaign to " + if (member!!.nickname != null) "${member!!.nickname}?" else "${member.userID}?",
                         textAlign = TextAlign.Center, modifier = Modifier.padding(10.dp), color = Color.Black)
 
                     Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically, modifier = Modifier
