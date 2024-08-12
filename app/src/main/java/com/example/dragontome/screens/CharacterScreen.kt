@@ -313,7 +313,7 @@ fun CharacterSheetCard(
 }
 
 @Composable
-private fun CharacterItemButton(
+public fun CharacterItemButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {

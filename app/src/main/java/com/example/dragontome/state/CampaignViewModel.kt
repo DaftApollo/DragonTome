@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.example.dragontome.data.Campaign
 import com.example.dragontome.data.CampaignMember
 import com.example.dragontome.data.FirebaseObject
+import com.example.dragontome.data.OnlineCharacterSheetHolder
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.delay
@@ -20,6 +21,8 @@ class CampaignViewModel(fireBaseObject:FirebaseObject): ViewModel() {
     private var _campaign = MutableStateFlow<Campaign?>(null)
     var campaign = _campaign.asStateFlow()
 
+    var currentCharacter = OnlineCharacterSheetHolder()
+
     init {
         val campaignRef = fireBaseObject.firestoreDB.collection("campaigns").document(fireBaseObject.currentCampaign!!)
         campaignRef.addSnapshotListener{ snapshot, e ->
@@ -30,7 +33,6 @@ class CampaignViewModel(fireBaseObject:FirebaseObject): ViewModel() {
             if (snapshot != null) {
                 _campaign.value = snapshot.toObject<Campaign>()!!
                 Log.d("debug", "Campaign Updated")
-               // Log.d("debug", "Should have updated the campaign: ${campaign.toString()}")
             }
 
         }

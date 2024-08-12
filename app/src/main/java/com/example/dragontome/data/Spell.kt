@@ -8,35 +8,35 @@ import kotlinx.serialization.Serializable
 @Serializable
 @Entity(tableName = "spells")
 data class Spell(
-    @PrimaryKey(autoGenerate = true) val id: Int,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     //Spell name
 
-    @ColumnInfo(name = "name") val name: String,
+    @ColumnInfo(name = "name") val name: String = "",
 
     //Spell Level
-    @ColumnInfo(name = "level") val level: String,
+    @ColumnInfo(name = "level") val level: String = "",
 
     //Spell School
-    @ColumnInfo(name = "school") val school: String,
+    @ColumnInfo(name = "school") val school: String = "",
 
     //Spell Casting Time
-    @ColumnInfo(name = "castTime") val castTime: String,
+    @ColumnInfo(name = "castTime") val castTime: String = "",
 
     //Spell Range
-    @ColumnInfo(name = "range") val range: String,
+    @ColumnInfo(name = "range") val range: String = "",
 
     //Spell Components
-    @ColumnInfo(name = "components") val components: String,
+    @ColumnInfo(name = "components") val components: String = "",
 
     //Spell Duration
-    @ColumnInfo(name = "duration") val duration: String,
+    @ColumnInfo(name = "duration") val duration: String = "",
 
     //TODO: Add available classes
 
     //Spell Source
-    @ColumnInfo(name = "source") val source: String,
+    @ColumnInfo(name = "source") val source: String = "",
 
     //Spell Text
-    @ColumnInfo(name = "description") val text: String
+    @ColumnInfo(name = "description") val text: String = ""
 
 )

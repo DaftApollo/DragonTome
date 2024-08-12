@@ -259,7 +259,6 @@ fun CharacterNavBar(
 
 @Composable
 fun CharacterSheetScreen(
-   //Had to remove the PreviewParameter annotation and create a prebuilt character sheet to use as default instead.
    characterSheetHolder: CharacterSheetHolder = theoChar,
    modifier: Modifier = Modifier,
    navController: NavHostController = rememberNavController(),
@@ -283,8 +282,6 @@ fun CharacterSheetScreen(
       var characterSheetInitializer:CharacterSheetInitializer = CharacterSheetInitializer(characterSheet = characterSheet)
 
       characterSheetInitializer.initializeCharacterSheet()
-
-      //updateDatabase(appViewModel, characterSheet)
 
       Scaffold (topBar = { CharacterNavBar(navController = navController) }) { innerPadding ->
          var characterClassPopup: Boolean by remember { mutableStateOf(false) }
@@ -1232,7 +1229,7 @@ fun BasicInfoWindow(
                   text = "Background: ",
                   fontWeight = FontWeight.Bold
                )
-               //TextField(value = characterSheet.background, onValueChange = {characterSheet.background = it})
+
                var backgroundText by remember {
                   mutableStateOf(characterSheet.background)
                }
@@ -1242,7 +1239,6 @@ fun BasicInfoWindow(
                      backgroundText = it
                      characterSheet.background = backgroundText
                      updateFunction()
-                     Log.d("debug", "Current Value of Background: ${characterSheet.background}" )
                   },
                   singleLine = true,
                   modifier = modifier
@@ -1266,7 +1262,6 @@ fun BasicInfoWindow(
                      raceText = it
                      characterSheet.race = raceText
                      updateFunction()
-                     Log.d("debug", "Current value of Race: ${characterSheet.race}")
                   },
                   singleLine = true,
                   modifier = modifier
@@ -1294,7 +1289,6 @@ fun BasicInfoWindow(
                      alignmentText = it
                      characterSheet.characterAlignment = alignmentText
                      updateFunction()
-                     Log.d("debug", "Current value of Alignment: ${characterSheet.characterAlignment}")
                   },
                   singleLine = true,
                   modifier = modifier
@@ -1326,7 +1320,6 @@ fun BasicInfoWindow(
 
                      characterSheet.experiencePoints = expText
                      updateFunction()
-                     Log.d("debug", "Current EXP value: ${characterSheet.experiencePoints}")
                   },
                   singleLine = true,
                   modifier = modifier
@@ -5451,7 +5444,8 @@ fun SpellCantripWindow(
          if (spellList != null) {
             Divider(modifier = Modifier.padding(horizontal = 10.dp), color = Color.LightGray)
             SpellList(spellList = spellList, appViewModel = appViewModel, additionMode = false, updateFunction = {
-               appViewModel.updateDatabase(characterSheet = characterSheet)
+               //appViewModel.updateDatabase(characterSheet = characterSheet)
+               updateFunction()
                refreshContent()
             })
          }
@@ -5580,7 +5574,8 @@ fun SpellLevelWindow(
          if (spellList != null) {
             Divider(modifier = Modifier.padding(horizontal = 10.dp), color = Color.LightGray)
             SpellList(spellList = spellList, appViewModel = appViewModel, additionMode = false, updateFunction = {
-               appViewModel.updateDatabase(characterSheet = characterSheet)
+               //appViewModel.updateDatabase(characterSheet = characterSheet)
+               updateFunction()
                refreshContent()
             })
          }

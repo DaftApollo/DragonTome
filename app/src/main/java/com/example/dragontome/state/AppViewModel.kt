@@ -41,16 +41,10 @@ class AppViewModel(context: Context) : ViewModel() {
     val sheetDao = sheetDB.sheetDao()
     var sheetList: List<CharacterSheetHolder> = emptyList()
 
-    val firestoreDB = Firebase.firestore
-
     init {
         viewModelScope.launch{
             spellList = populateSpells(spellDao)
             sheetList = populateSheets(sheetDao)
-
-            if(isOnline(context)){
-
-            }
         }
     }
 
@@ -72,92 +66,90 @@ class AppViewModel(context: Context) : ViewModel() {
             val characterSheet = Json.decodeFromString<CharacterSheet>(it.data)
             characterSheetList = characterSheetList.plus(CharacterSheetHolder(characterSheet = characterSheet, id = it.id))
         }
-        Log.d("debug", "Populating from database. Passed list: ${characterSheetList.toString()}")
         return characterSheetList
     }
 
-    fun addSpell(additionMode: Boolean, spell: Spell){
-        if(currentCharacter != null && additionMode == true){
-            Log.d("debug", "Current Character: ${currentCharacter.toString()}")
+    fun addSpell(additionMode: Boolean, spell: Spell, characterSheet: CharacterSheet? =  if (currentCharacter != null) currentCharacter!!.characterSheet else null){
+        if(characterSheet != null && additionMode == true){
+            Log.d("debug", "Current Character: ${characterSheet.toString()}")
             Log.d("debug", "Spell: ${spell.toString()}")
 
             if (spell.level.equals("Cantrip")) {
-                currentCharacter!!.characterSheet.spellBook.cantrips = currentCharacter!!.characterSheet.spellBook.cantrips.plus(spell)
+                characterSheet.spellBook.cantrips = characterSheet.spellBook.cantrips.plus(spell)
                 Log.d("debug", "Should have added a cantrip")
             } else if (spell.level.equals("1")) {
-                currentCharacter!!.characterSheet.spellBook.levelOneSpells = currentCharacter!!.characterSheet.spellBook.levelOneSpells.plus(spell)
+                characterSheet.spellBook.levelOneSpells = characterSheet.spellBook.levelOneSpells.plus(spell)
                 Log.d("debug", "Should have added a Level one spell")
             } else if (spell.level.equals("2")) {
-                currentCharacter!!.characterSheet.spellBook.levelTwoSpells = currentCharacter!!.characterSheet.spellBook.levelTwoSpells.plus(spell)
+                characterSheet.spellBook.levelTwoSpells = characterSheet.spellBook.levelTwoSpells.plus(spell)
                 Log.d("debug", "Should have added a Level two spell")
             } else if (spell.level.equals("3")) {
-                currentCharacter!!.characterSheet.spellBook.levelThreeSpells = currentCharacter!!.characterSheet.spellBook.levelThreeSpells.plus(spell)
+                characterSheet.spellBook.levelThreeSpells = characterSheet.spellBook.levelThreeSpells.plus(spell)
                 Log.d("debug", "Should have added a Level three spell")
-                Log.d("debug", "Level three spellbook: ${currentCharacter!!.characterSheet.spellBook.levelThreeSpells}")
             } else if (spell.level.equals("4")) {
-                currentCharacter!!.characterSheet.spellBook.levelFourSpells = currentCharacter!!.characterSheet.spellBook.levelFourSpells.plus(spell)
+                characterSheet.spellBook.levelFourSpells = characterSheet.spellBook.levelFourSpells.plus(spell)
                 Log.d("debug", "Should have added a Level four spell")
             } else if (spell.level.equals("5")) {
-                currentCharacter!!.characterSheet.spellBook.levelFiveSpells = currentCharacter!!.characterSheet.spellBook.levelFiveSpells.plus(spell)
+                characterSheet.spellBook.levelFiveSpells = characterSheet.spellBook.levelFiveSpells.plus(spell)
                 Log.d("debug", "Should have added a Level five spell")
             } else if (spell.level.equals("6")) {
-                currentCharacter!!.characterSheet.spellBook.levelSixSpells = currentCharacter!!.characterSheet.spellBook.levelSixSpells.plus(spell)
+                characterSheet.spellBook.levelSixSpells = characterSheet.spellBook.levelSixSpells.plus(spell)
                 Log.d("debug", "Should have added a Level six spell")
             } else if (spell.level.equals("7")) {
-                currentCharacter!!.characterSheet.spellBook.levelSevenSpells = currentCharacter!!.characterSheet.spellBook.levelSevenSpells.plus(spell)
+                characterSheet.spellBook.levelSevenSpells = characterSheet.spellBook.levelSevenSpells.plus(spell)
                 Log.d("debug", "Should have added a Level seven spell")
             } else if (spell.level.equals("8")) {
-                currentCharacter!!.characterSheet.spellBook.levelEightSpells = currentCharacter!!.characterSheet.spellBook.levelEightSpells.plus(spell)
+                characterSheet.spellBook.levelEightSpells = characterSheet.spellBook.levelEightSpells.plus(spell)
                 Log.d("debug", "Should have added a Level eight spell")
             } else if (spell.level.equals("9")) {
-                currentCharacter!!.characterSheet.spellBook.levelNineSpells = currentCharacter!!.characterSheet.spellBook.levelNineSpells.plus(spell)
+                characterSheet.spellBook.levelNineSpells = characterSheet.spellBook.levelNineSpells.plus(spell)
                 Log.d("debug", "Should have added a Level nine spell")
             } else{
                 Log.d("debug", "Tried adding a spell that didn't match a level.")
             }
-            Log.d("debug", "${currentCharacter!!.characterSheet.spellBook.toString()}")
+            Log.d("debug", "${characterSheet.spellBook.toString()}")
         }
-        else if(currentCharacter != null && additionMode != true){
-            Log.d("debug", "Current Character: ${currentCharacter.toString()}")
+        else if(characterSheet != null && additionMode != true){
+            Log.d("debug", "Current Character: ${characterSheet.toString()}")
             Log.d("debug", "Spell: ${spell.toString()}")
             if (spell.level.equals("Cantrip")) {
-                currentCharacter!!.characterSheet.spellBook.cantrips = currentCharacter!!.characterSheet.spellBook.cantrips.minus(spell)
+                characterSheet.spellBook.cantrips = characterSheet.spellBook.cantrips.minus(spell)
                 Log.d("debug", "Should have removed a Cantrip spell")
             } else if (spell.level.equals("1")) {
-                currentCharacter!!.characterSheet.spellBook.levelOneSpells = currentCharacter!!.characterSheet.spellBook.levelOneSpells.minus(spell)
+                characterSheet.spellBook.levelOneSpells = characterSheet.spellBook.levelOneSpells.minus(spell)
                 Log.d("debug", "Should have removed a Level one spell")
             } else if (spell.level.equals("2")) {
-                currentCharacter!!.characterSheet.spellBook.levelTwoSpells = currentCharacter!!.characterSheet.spellBook.levelTwoSpells.minus(spell)
+                characterSheet.spellBook.levelTwoSpells = characterSheet.spellBook.levelTwoSpells.minus(spell)
                 Log.d("debug", "Should have removed a Level two spell")
             } else if (spell.level.equals("3")) {
-                currentCharacter!!.characterSheet.spellBook.levelThreeSpells = currentCharacter!!.characterSheet.spellBook.levelThreeSpells.minus(spell)
+                characterSheet.spellBook.levelThreeSpells = characterSheet.spellBook.levelThreeSpells.minus(spell)
                 Log.d("debug", "Should have removed a Level three spell")
             } else if (spell.level.equals("4")) {
-                currentCharacter!!.characterSheet.spellBook.levelFourSpells = currentCharacter!!.characterSheet.spellBook.levelFourSpells.minus(spell)
+                characterSheet.spellBook.levelFourSpells = characterSheet.spellBook.levelFourSpells.minus(spell)
                 Log.d("debug", "Should have removed a Level four spell")
             } else if (spell.level.equals("5")) {
-                currentCharacter!!.characterSheet.spellBook.levelFiveSpells = currentCharacter!!.characterSheet.spellBook.levelFiveSpells.minus(spell)
+                characterSheet.spellBook.levelFiveSpells = characterSheet.spellBook.levelFiveSpells.minus(spell)
                 Log.d("debug", "Should have removed a Level five spell")
             } else if (spell.level.equals("6")) {
-                currentCharacter!!.characterSheet.spellBook.levelSixSpells = currentCharacter!!.characterSheet.spellBook.levelSixSpells.minus(spell)
+                characterSheet.spellBook.levelSixSpells = characterSheet.spellBook.levelSixSpells.minus(spell)
                 Log.d("debug", "Should have removed a Level six spell")
             } else if (spell.level.equals("7")) {
-                currentCharacter!!.characterSheet.spellBook.levelSevenSpells = currentCharacter!!.characterSheet.spellBook.levelSevenSpells.minus(spell)
+                characterSheet.spellBook.levelSevenSpells = characterSheet.spellBook.levelSevenSpells.minus(spell)
                 Log.d("debug", "Should have removed a Level seven spell")
             } else if (spell.level.equals("8")) {
-                currentCharacter!!.characterSheet.spellBook.levelEightSpells = currentCharacter!!.characterSheet.spellBook.levelEightSpells.minus(spell)
+                characterSheet.spellBook.levelEightSpells = characterSheet.spellBook.levelEightSpells.minus(spell)
                 Log.d("debug", "Should have removed a Level eight spell")
             } else if (spell.level.equals("9")) {
-                currentCharacter!!.characterSheet.spellBook.levelNineSpells = currentCharacter!!.characterSheet.spellBook.levelNineSpells.minus(spell)
+                characterSheet.spellBook.levelNineSpells = characterSheet.spellBook.levelNineSpells.minus(spell)
                 Log.d("debug", "Should have removed a Level nine spell")
             } else{
                 Log.d("debug", "Tried removing a spell that didn't match a level.")
             }
-            Log.d("debug", "${currentCharacter!!.characterSheet.spellBook.toString()}")
+            Log.d("debug", "${characterSheet.spellBook.toString()}")
         }
         else{
             Log.d("debug", "Called the spell addition/removal function, current character is null if this is called.")
-            Log.d("debug", "Current Character: ${currentCharacter.toString()}")
+            Log.d("debug", "Current Character: ${characterSheet.toString()}")
             Log.d("debug", "Spell: ${spell.toString()}")
         }
 

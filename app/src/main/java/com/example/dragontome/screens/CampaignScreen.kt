@@ -157,7 +157,7 @@ fun CampaignScreen(appViewModel: AppViewModel, context: Context){
                         Log.d("debug", "Entering navigation composable. Current campaign: ${firebaseObject.currentCampaign.toString()}")
                     }
 
-                    CampaignViewScreen(firebaseObject = firebaseObject)
+                    CampaignViewScreen(firebaseObject = firebaseObject, appviewModel = appViewModel)
                 }
             }
         } else {
@@ -174,11 +174,6 @@ fun CampaignScreen(appViewModel: AppViewModel, context: Context){
             }
         }
     }
-
-
-
-
-    Log.d("debug", "${appViewModel.isOnline(context)}")
 }
 
 @Composable

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,11 +36,14 @@ import androidx.compose.material.Tab
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -91,12 +95,17 @@ import androidx.navigation.compose.rememberNavController
 import com.example.dragontome.R
 import com.example.dragontome.data.Campaign
 import com.example.dragontome.data.CampaignMember
+import com.example.dragontome.data.CharacterSheet
 import com.example.dragontome.data.DiceRollerObject
 import com.example.dragontome.data.FirebaseObject
 import com.example.dragontome.data.Message
+import com.example.dragontome.data.OnlineCharacterSheetHolder
+import com.example.dragontome.data.Spell
+import com.example.dragontome.state.AppViewModel
 import com.example.dragontome.state.CampaignViewModel
 import com.example.dragontome.ui.theme.primaryContainerLight
 import com.example.dragontome.ui.theme.primaryLight
+import com.example.dragontome.ui.theme.removeColor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -106,13 +115,15 @@ import kotlin.coroutines.CoroutineContext
 enum class CampaignViewScreens{
     ROLLS_AND_CHAT,
     CHARACTERS,
+    SPELLS,
     NOTES,
-    SETTINGS
+    SETTINGS,
+    CHARACTER
 }
 
 
 @Composable
-fun CampaignViewScreen(firebaseObject: FirebaseObject, viewModel: CampaignViewModel = CampaignViewModel(fireBaseObject = firebaseObject)){
+fun CampaignViewScreen(firebaseObject: FirebaseObject, viewModel: CampaignViewModel = CampaignViewModel(fireBaseObject = firebaseObject), appviewModel:AppViewModel){
     var navController:NavHostController = rememberNavController()
 
     val campaign by viewModel.campaign.collectAsStateWithLifecycle()
@@ -143,26 +154,25 @@ fun CampaignViewScreen(firebaseObject: FirebaseObject, viewModel: CampaignViewMo
                         CampaignChat(campaign = campaign!!, firebaseObject = firebaseObject, viewModel = viewModel)
                     }
                     composable(route = CampaignViewScreens.CHARACTERS.name) {
-                        CampaignCharacterOverview(viewModel = viewModel)
+                        CampaignCharacterOverview(campaign = campaign!!, firebaseObject = firebaseObject, viewModel = viewModel, navController = navController)
+                    }
+                    composable(route = CampaignViewScreens.SPELLS.name) {
+                        CampaignSpells(viewModel = viewModel, appviewModel = appviewModel, campaign = campaign!!, firebaseObject = firebaseObject)
                     }
                     composable(route = CampaignViewScreens.NOTES.name) {
                         CampaignNotes(viewModel = viewModel)
                     }
                     composable(route = CampaignViewScreens.SETTINGS.name) {
                         CampaignSettings(campaign = campaign!!, firebaseObject = firebaseObject)
-
+                    }
+                    composable(route = CampaignViewScreens.CHARACTER.name) {
+                        OnlineCharacterSheetScreen(onlineCharacterSheetHolder = viewModel.currentCharacter, viewModel = viewModel, campaign = campaign!!, firebaseObject = firebaseObject)
                     }
                 }
             }
             
             var openChangeNicknameDialogue by remember {
                 mutableStateOf(false)
-            }
-
-            SideEffect {
-                if(campaign != null){
-                    Log.d("debug", "Member Profile: ${getMemberProfile(campaign!!, firebaseObject.currentUser!!.uid)}")
-                }
             }
 
             if(campaign != null && getMemberProfile(campaign!!, firebaseObject.currentUser!!.uid)?.nickname == null){
@@ -224,19 +234,58 @@ fun CampaignNavBar(navController: NavHostController) {
         }
         Tab(selected = selectedItem == 2, onClick = {
             selectedItem = 2
+            navController.navigate(CampaignViewScreens.SPELLS.name)
+        },
+            modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+            Text(text = "Spells")
+            Icon(imageVector = Icons.Filled.Star, contentDescription = "")
+        }
+        Tab(selected = selectedItem == 3, onClick = {
+            selectedItem = 3
             navController.navigate(CampaignViewScreens.NOTES.name)
         },
             modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
             Text(text = "Notes")
             Icon(imageVector = Icons.Filled.Edit, contentDescription = "")
         }
-        Tab(selected = selectedItem == 3, onClick = {
-            selectedItem = 3
+        Tab(selected = selectedItem == 4, onClick = {
+            selectedItem = 4
             navController.navigate(CampaignViewScreens.SETTINGS.name)
         },
             modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
             Text(text = "Settings")
             Icon(imageVector = Icons.Filled.Settings, contentDescription = "")
+        }
+    }
+}
+
+@Composable
+fun CampaignSpells(viewModel: CampaignViewModel, appviewModel: AppViewModel, campaign: Campaign, firebaseObject: FirebaseObject){
+    OnlineSpellList(appViewModel = appviewModel, additionMode = true, viewModel = viewModel, updateFunction = {
+        updateCampaign(campaign, firebaseObject)
+    })
+}
+
+@Composable
+fun OnlineSpellList(
+    appViewModel: AppViewModel,
+    spellList: List<Spell> = appViewModel.spellList,
+    additionMode: Boolean,
+    modifier: Modifier = Modifier,
+    updateFunction: () -> Unit = {},
+    viewModel: CampaignViewModel
+) {
+    LazyColumn (modifier = modifier, contentPadding = PaddingValues(all = 5.dp)) {
+        items(spellList) {
+                spell->
+            SpellCard(spell = spell, modifier = modifier, onClick = {
+                appViewModel.addSpell(additionMode = additionMode, spell = spell, characterSheet = viewModel.currentCharacter.characterSheet)
+            },
+                updateFunction = updateFunction,
+                additionMode = additionMode
+            )
+            Spacer(modifier = Modifier.padding(all = 3.dp))
+
         }
     }
 }
@@ -337,51 +386,57 @@ fun CampaignChat(campaign: Campaign, firebaseObject: FirebaseObject, viewModel: 
 }
 }
 
+
+
 @Composable
-fun RollInfoDialog(onDismissRequest: () -> Unit){
-    Dialog(onDismissRequest = onDismissRequest) {
-        Card (modifier = Modifier
+fun CampaignCharacterOverview(campaign: Campaign, firebaseObject: FirebaseObject, viewModel: CampaignViewModel, navController: NavHostController){
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
+    ){
+        LazyColumn(modifier = Modifier.fillMaxHeight(0.80f), contentPadding = PaddingValues(10.dp)) {
+            items(campaign.characterList) { character ->
+                OnlineCharacterSheetCard(onlineCharacterSheetHolder = character, onClick = {
+                    viewModel.currentCharacter = it
+                    navController.navigate(CampaignViewScreens.CHARACTER.name)
+                }, campaign = campaign, firebaseObject = firebaseObject)
+            }
+            //TODO: Add dm sheets
+        }
+
+        Row(modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
-            .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(16.dp)),
-            colors = CardDefaults.cardColors(containerColor = primaryLight, contentColor = Color.Black),
-            shape = RoundedCornerShape(16.dp)) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(10.dp)) {
-                Text(text = "How to do rolls:", textAlign = TextAlign.Center, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                Text(text = "Rolls within chat can be performed by using the /roll command.", textAlign = TextAlign.Center)
-                Text(text = "To use the command, simply type /roll or one of its variants, followed by the roll(s).", textAlign = TextAlign.Center)
-                Text(text = "The roll command can be called by using a period(.) or either slash character(\\,/), followed by the letter r or the word 'roll'", textAlign = TextAlign.Center)
-                Text(text = "Rolls take the form of the common syntax [digit]d[digit], such as '4d6'.", textAlign = TextAlign.Center)
-                Text(text = "Multiple sets of dice can be rolled within a single command, such as  /roll 2d4 3d10", textAlign = TextAlign.Center)
-                Text(text = "Rolls can also be added or subtracted from each other: /roll d6 - 2d4", textAlign = TextAlign.Center)
-                Text(text = "Note that rolls cannot be combined with regular chat messages.", textAlign = TextAlign.Center)
+            .fillMaxHeight()
+            .padding(bottom = 10.dp, end = 10.dp), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.Bottom) {
+            androidx.compose.material3.IconButton(
+                onClick = {
+                    campaign.characterList = campaign.characterList.plus(OnlineCharacterSheetHolder(owner = firebaseObject.currentUser!!.uid))
+                    updateCampaign(campaign, firebaseObject)
+                },
+                modifier = Modifier.size(size = 75.dp)
+
+            ) {
+                androidx.compose.material3.Icon(
+                    imageVector = Icons.Filled.Add, contentDescription = "Create New Sheet",
+                    modifier = Modifier
+                        .size(size = 50.dp)
+                        .border(
+                            width = 1.dp,
+                            color = Color.DarkGray,
+                            shape = RoundedCornerShape(size = 5.dp)
+                        )
+                        .background(
+                            color = primaryContainerLight,
+                            shape = RoundedCornerShape(size = 5.dp)
+                        )
+                )
+
             }
         }
+
     }
-}
-
-fun SendMessage(campaign: Campaign, firebaseObject: FirebaseObject, message: Message){
-    val diceRoller:DiceRollerObject = DiceRollerObject
-
-    if(diceRoller.detectRoll(message.text)){
-            message.isRoll = true
-            message.text = diceRoller.doRoll(message.text)
-    }
-
-    campaign.chatLog = campaign.chatLog.plus(message)
-
-    updateCampaign(campaign, firebaseObject)
-}
-
-suspend fun refreshChat(everySecond:() -> Unit){
-    delay(1000)
-    Log.d("debug", "Delayed function")
-    everySecond()
-    refreshChat(everySecond)
-}
-
-@Composable
-fun CampaignCharacterOverview(viewModel: CampaignViewModel){
 
 }
 
@@ -635,6 +690,187 @@ fun CampaignSettings(campaign: Campaign, firebaseObject: FirebaseObject){
 }
 
 @Composable
+fun OnlineCharacterSheetCard(onlineCharacterSheetHolder: OnlineCharacterSheetHolder, onClick: (OnlineCharacterSheetHolder) -> Unit, firebaseObject: FirebaseObject, campaign: Campaign){
+    androidx.compose.material3.Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(2.dp, Color.Black, shape = RoundedCornerShape(10.dp)),
+        colors = CardDefaults.cardColors(containerColor = primaryContainerLight)
+
+    ) {
+        var characterSheet = onlineCharacterSheetHolder.characterSheet
+        Row(verticalAlignment = Alignment.CenterVertically){
+            Column(modifier = Modifier.padding(top = 2.dp)) {
+
+                //Character name
+                Text(
+                    text = characterSheet.charName,
+                    modifier = Modifier.padding(start = 10.dp, end = 10.dp),
+                    fontSize = 25.sp
+                )
+
+                //Character Class and their levels. Supports multiclassing
+                var levelText: String = ""
+                var count = 0
+                for (pair in characterSheet.characterClass){
+                    levelText = levelText + "Level ${pair.classLevel} ${pair.characterClass.toString().
+                    lowercase().
+                    capitalize()}"
+
+                    count++
+
+                    if (count < characterSheet.characterClass.size){
+                        levelText = levelText +", "
+                    }
+                }
+                Text(
+                    text = levelText,
+                    modifier = Modifier
+                        .padding(start = 15.dp, end = 15.dp, top = 0.dp, bottom = 5.dp)
+                        .fillMaxWidth(.75f)
+                )
+            }
+            Spacer(modifier = Modifier.weight(1f))
+
+            Column(verticalArrangement = Arrangement.SpaceBetween) {
+
+                var openDeletionDialog by remember {
+                    mutableStateOf(false)
+                }
+                CharacterItemButton(onClick = { onClick(onlineCharacterSheetHolder) })
+
+                if(onlineCharacterSheetHolder.owner == firebaseObject.currentUser!!.uid){
+                    androidx.compose.material3.IconButton(
+                        onClick = { openDeletionDialog = true },
+                        modifier = Modifier
+                            .padding(bottom = 10.dp, start = 15.dp)
+                            .size(size = 20.dp)
+
+                    ) {
+                        androidx.compose.material3.Icon(
+                            imageVector = Icons.Filled.Delete,
+                            contentDescription = "Delete Character"
+                        )
+                    }
+                }
+
+
+                if(openDeletionDialog){
+                    Dialog(onDismissRequest = { openDeletionDialog = false }) {
+                        androidx.compose.material.Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(150.dp)
+                                .padding(16.dp)
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "Delete Character \"${characterSheet.charName}\"?",
+                                    modifier = Modifier.padding(vertical = 10.dp)
+                                )
+                                androidx.compose.material.Divider(
+                                    thickness = 1.dp,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                )
+                                Row {
+                                    androidx.compose.material.TextButton(
+                                        onClick = {
+                                            //TODO deletion
+                                            campaign.characterList = campaign.characterList.minus(onlineCharacterSheetHolder)
+                                            updateCampaign(campaign, firebaseObject)
+                                            openDeletionDialog = false
+                                        },
+                                        modifier = Modifier
+                                            .padding(horizontal = 10.dp)
+                                            .background(
+                                                color = removeColor,
+                                                shape = RoundedCornerShape(size = 5.dp)
+                                            )
+                                            .border(
+                                                width = 1.dp,
+                                                color = Color.Black,
+                                                shape = RoundedCornerShape(size = 5.dp)
+                                            )
+
+                                    ) {
+                                        Text(text = "Delete")
+                                    }
+                                    androidx.compose.material.TextButton(
+                                        onClick = {
+                                            openDeletionDialog = false
+
+                                        },
+                                        modifier = Modifier
+                                            .padding(horizontal = 10.dp)
+                                            .background(
+                                                color = primaryContainerLight,
+                                                shape = RoundedCornerShape(size = 5.dp)
+                                            )
+                                            .border(
+                                                width = 1.dp,
+                                                color = Color.Black,
+                                                shape = RoundedCornerShape(size = 5.dp)
+                                            )
+                                    ) {
+                                        Text(text = "Cancel")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun RollInfoDialog(onDismissRequest: () -> Unit){
+    Dialog(onDismissRequest = onDismissRequest) {
+        Card (modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(16.dp)),
+            colors = CardDefaults.cardColors(containerColor = primaryLight, contentColor = Color.Black),
+            shape = RoundedCornerShape(16.dp)) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(10.dp)) {
+                Text(text = "How to do rolls:", textAlign = TextAlign.Center, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(text = "Rolls within chat can be performed by using the /roll command.", textAlign = TextAlign.Center)
+                Text(text = "To use the command, simply type /roll or one of its variants, followed by the roll(s).", textAlign = TextAlign.Center)
+                Text(text = "The roll command can be called by using a period(.) or either slash character(\\,/), followed by the letter r or the word 'roll'", textAlign = TextAlign.Center)
+                Text(text = "Rolls take the form of the common syntax [digit]d[digit], such as '4d6'.", textAlign = TextAlign.Center)
+                Text(text = "Multiple sets of dice can be rolled within a single command, such as  /roll 2d4 3d10", textAlign = TextAlign.Center)
+                Text(text = "Rolls can also be added or subtracted from each other: /roll d6 - 2d4", textAlign = TextAlign.Center)
+                Text(text = "Note that rolls cannot be combined with regular chat messages.", textAlign = TextAlign.Center)
+            }
+        }
+    }
+}
+
+fun SendMessage(campaign: Campaign, firebaseObject: FirebaseObject, message: Message){
+    val diceRoller:DiceRollerObject = DiceRollerObject
+
+    if(diceRoller.detectRoll(message.text)){
+        message.isRoll = true
+        message.text = diceRoller.doRoll(message.text)
+    }
+
+    campaign.chatLog = campaign.chatLog.plus(message)
+
+    updateCampaign(campaign, firebaseObject)
+}
+
+suspend fun refreshChat(everySecond:() -> Unit){
+    delay(1000)
+    Log.d("debug", "Delayed function")
+    everySecond()
+    refreshChat(everySecond)
+}
+
+@Composable
 fun MessageItem(message:Message, campaign: Campaign, firebaseObject: FirebaseObject){
     val user = getMemberProfile(campaign, memberID = message.userID)
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = if(message.userID == firebaseObject.currentUser!!.uid) Arrangement.End else Arrangement.Start) {
@@ -767,7 +1003,7 @@ fun getMemberProfile(campaign:Campaign, memberID:String): CampaignMember? {
     return null
 }
 
-fun updateCampaign(campaign: Campaign, firebaseObject: FirebaseObject){
+public fun updateCampaign(campaign: Campaign, firebaseObject: FirebaseObject){
     if(campaign != null) {
         firebaseObject.firestoreDB.collection("campaigns")
             .document(firebaseObject.currentCampaign!!).set(campaign)

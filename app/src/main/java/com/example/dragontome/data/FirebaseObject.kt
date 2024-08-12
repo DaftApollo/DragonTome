@@ -152,4 +152,18 @@ object FirebaseObject {
             }
     }
 
+    fun addCharacter(owner:String, campaignCode: String){
+        firestoreDB.collection("campaigns").document(campaignCode).update("characterList", FieldValue.arrayUnion(OnlineCharacterSheetHolder(owner = owner)))
+            .addOnSuccessListener {
+                Log.d("debug", "Should have added a character")
+            }
+    }
+
+    fun deleteCharacter(onlineCharacterSheetHolder: OnlineCharacterSheetHolder, campaignCode: String){
+        firestoreDB.collection("campaigns").document(campaignCode).update("characterList", FieldValue.arrayRemove(onlineCharacterSheetHolder))
+            .addOnSuccessListener {
+                Log.d("debug", "Should have removed a character")
+            }
+    }
+
 }

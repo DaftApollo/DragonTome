@@ -3,7 +3,7 @@ package com.example.dragontome.data
 data class Campaign
     (var name: String = "",
 
-     var characterList:List<CharacterSheetHolder> = emptyList(),
+     var characterList:List<OnlineCharacterSheetHolder> = emptyList(),
 
      var chatLog: List<Message> = emptyList(),
 
