@@ -191,7 +191,7 @@ var theoChar:CharacterSheetHolder = CharacterSheetHolder(CharacterSheet("Theo",
    )
 ),0)
 
-enum class characterSheetScreens(){
+public enum class characterSheetScreens(){
    Stats,
    AbilitiesAndInventory,
    Spells,

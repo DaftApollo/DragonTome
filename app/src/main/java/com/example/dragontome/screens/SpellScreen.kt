@@ -93,7 +93,8 @@ fun SpellCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
     updateFunction: () -> Unit = {},
-    additionMode: Boolean = true
+    additionMode: Boolean = true,
+    isEditable: Boolean = true
 ) {
     var expanded by remember { mutableStateOf(false)}
     Card (
@@ -177,7 +178,7 @@ fun SpellCard(
                 modifier = modifier.padding(horizontal = 15.dp, vertical = 5.dp)
             )
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                SpellAddButton(additionMode = additionMode, onClick = onClick, updateFunction = updateFunction)
+                SpellAddButton(additionMode = additionMode, onClick = onClick, updateFunction = updateFunction, isEditable = isEditable)
             }
         }
     }
@@ -212,7 +213,7 @@ fun SpellList(
 private fun SpellItemButton(
     expanded: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     IconButton(
         onClick = onClick,
@@ -231,9 +232,12 @@ private fun SpellItemButton(
 private fun SpellAddButton(
     onClick: () -> Unit = {},
     additionMode: Boolean = true,
-    updateFunction: () -> Unit = {}
+    updateFunction: () -> Unit = {},
+    isEditable: Boolean = true
 ){
-    IconButton(onClick = {
+    IconButton(
+        enabled = isEditable,
+        onClick = {
         onClick()
         updateFunction()
         Log.d("debug", "Button hit. Addition mode : ${additionMode}")

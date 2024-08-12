@@ -273,12 +273,14 @@ fun OnlineSpellList(
     additionMode: Boolean,
     modifier: Modifier = Modifier,
     updateFunction: () -> Unit = {},
-    viewModel: CampaignViewModel
+    viewModel: CampaignViewModel,
+    isEditable: Boolean = viewModel.fireBaseObject.currentUser!!.uid == viewModel.currentCharacter.owner
 ) {
+
     LazyColumn (modifier = modifier, contentPadding = PaddingValues(all = 5.dp)) {
         items(spellList) {
                 spell->
-            SpellCard(spell = spell, modifier = modifier, onClick = {
+            SpellCard(spell = spell, modifier = modifier, isEditable = isEditable, onClick = {
                 appViewModel.addSpell(additionMode = additionMode, spell = spell, characterSheet = viewModel.currentCharacter.characterSheet)
             },
                 updateFunction = updateFunction,
