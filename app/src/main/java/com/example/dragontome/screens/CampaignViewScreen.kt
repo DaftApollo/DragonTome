@@ -24,10 +24,12 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -106,6 +108,7 @@ import com.example.dragontome.state.CampaignViewModel
 import com.example.dragontome.ui.theme.primaryContainerLight
 import com.example.dragontome.ui.theme.primaryLight
 import com.example.dragontome.ui.theme.removeColor
+import com.example.dragontome.ui.theme.tertiaryContainerLight
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -116,21 +119,16 @@ enum class CampaignViewScreens{
     ROLLS_AND_CHAT,
     CHARACTERS,
     SPELLS,
-    NOTES,
     SETTINGS,
     CHARACTER
 }
 
 
 @Composable
-fun CampaignViewScreen(firebaseObject: FirebaseObject, viewModel: CampaignViewModel = CampaignViewModel(fireBaseObject = firebaseObject), appviewModel:AppViewModel){
+fun CampaignViewScreen(firebaseObject: FirebaseObject, viewModel: CampaignViewModel = CampaignViewModel(fireBaseObject = firebaseObject), appviewModel:AppViewModel, navBackToCampaigns:() -> Unit){
     var navController:NavHostController = rememberNavController()
 
     val campaign by viewModel.campaign.collectAsStateWithLifecycle()
-    SideEffect {
-        Log.d("debug", "Within the CampaignViewScreen. Current value of the campaign: ${campaign.toString()}")
-    }
-
 
 
     if(campaign != null){
@@ -159,11 +157,8 @@ fun CampaignViewScreen(firebaseObject: FirebaseObject, viewModel: CampaignViewMo
                     composable(route = CampaignViewScreens.SPELLS.name) {
                         CampaignSpells(viewModel = viewModel, appviewModel = appviewModel, campaign = campaign!!, firebaseObject = firebaseObject)
                     }
-                    composable(route = CampaignViewScreens.NOTES.name) {
-                        CampaignNotes(viewModel = viewModel)
-                    }
                     composable(route = CampaignViewScreens.SETTINGS.name) {
-                        CampaignSettings(campaign = campaign!!, firebaseObject = firebaseObject)
+                        CampaignSettings(campaign = campaign!!, firebaseObject = firebaseObject, navBackToCampaigns = navBackToCampaigns, viewModel = viewModel)
                     }
                     composable(route = CampaignViewScreens.CHARACTER.name) {
                         OnlineCharacterSheetScreen(onlineCharacterSheetHolder = viewModel.currentCharacter, viewModel = viewModel, campaign = campaign!!, firebaseObject = firebaseObject)
@@ -242,14 +237,6 @@ fun CampaignNavBar(navController: NavHostController) {
         }
         Tab(selected = selectedItem == 3, onClick = {
             selectedItem = 3
-            navController.navigate(CampaignViewScreens.NOTES.name)
-        },
-            modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
-            Text(text = "Notes")
-            Icon(imageVector = Icons.Filled.Edit, contentDescription = "")
-        }
-        Tab(selected = selectedItem == 4, onClick = {
-            selectedItem = 4
             navController.navigate(CampaignViewScreens.SETTINGS.name)
         },
             modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
@@ -309,11 +296,9 @@ fun CampaignChat(campaign: Campaign, firebaseObject: FirebaseObject, viewModel: 
     LaunchedEffect(key1 = null) {
         refreshChat(everySecond = {
             flag = !flag
-            Log.d("debug","State of flag: ${flag}")
+            //Log.d("debug","State of flag: ${flag}")
         })
     }
-
-    Log.d("debug", "Printed chatlog")
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -331,7 +316,8 @@ fun CampaignChat(campaign: Campaign, firebaseObject: FirebaseObject, viewModel: 
             }
 
         }
-            coroutineScope.launch { state.scrollToItem(index = state.layoutInfo.totalItemsCount) }
+            coroutineScope.launch {
+                state.scrollToItem(index = state.layoutInfo.totalItemsCount) }
 //TODO: Add logic to not scroll to bottom if the user has scrolled up to view previous messages. Getting pulled down all the time while trying to view previous messages is fucking annoying
 
     var text by remember {
@@ -348,6 +334,7 @@ fun CampaignChat(campaign: Campaign, firebaseObject: FirebaseObject, viewModel: 
         shape = RoundedCornerShape(10.dp),
         modifier = Modifier
             .fillMaxWidth()
+            .height(80.dp)
             .padding(10.dp)
             .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(10.dp)),
         trailingIcon = {
@@ -443,16 +430,12 @@ fun CampaignCharacterOverview(campaign: Campaign, firebaseObject: FirebaseObject
 }
 
 @Composable
-fun CampaignNotes(viewModel: CampaignViewModel){
-
-}
-
-@Composable
-fun CampaignSettings(campaign: Campaign, firebaseObject: FirebaseObject){
+fun CampaignSettings(campaign: Campaign, firebaseObject: FirebaseObject, navBackToCampaigns: () -> Unit, viewModel: CampaignViewModel){
 
     Column(modifier = Modifier
         .fillMaxSize()
-        .padding(vertical = 20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        .padding(vertical = 20.dp)
+        .verticalScroll(state = rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
 
         Text(text = "Player Settings", textAlign = TextAlign.Center, fontWeight = FontWeight.Bold, fontSize = 20.sp)
         Divider(modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp), thickness = 2.dp, color = Color.Black)
@@ -497,6 +480,61 @@ fun CampaignSettings(campaign: Campaign, firebaseObject: FirebaseObject){
                         updateCampaign(campaign = campaign, firebaseObject = firebaseObject)
                         openNameChangeDialogue = false
                     })
+            }
+
+        }
+
+        Row (
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+
+            var openLeaveCampaignDialogue by remember {
+                mutableStateOf(false)
+            }
+            var leaveError by remember {
+                mutableStateOf(false)
+            }
+
+            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                TextButton(
+                    onClick = {
+                        if (firebaseObject.currentUser!!.uid != campaign.gameMaster)
+                            openLeaveCampaignDialogue = true
+                        else
+                            leaveError = true
+                    },
+
+                     modifier = Modifier
+                         .fillMaxWidth()
+                         .background(
+                             color = tertiaryContainerLight,
+                             shape = RoundedCornerShape(8.dp)
+                         )
+                         .border(
+                             width = 2.dp,
+                             color = Color.Black,
+                             shape = RoundedCornerShape(8.dp)
+                         ), shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(text = "Leave Campaign", color = Color.Black)
+                }
+                if(leaveError){
+                    Text(text = "Error: Cannot leave the campaign while DM. Transfer DM ownership or delete campaign instead.", color = Color.Black, textAlign = TextAlign.Center)
+                }
+            }
+
+            if(openLeaveCampaignDialogue){
+                LeaveCampaignDialog(
+                    member = getMemberProfile(campaign, firebaseObject.currentUser!!.uid),
+                    campaign = campaign,
+                    onDismissRequest = { openLeaveCampaignDialogue = false },
+                    firebaseObject = firebaseObject,
+                    navBackToCampaigns = navBackToCampaigns
+                )
             }
 
         }
@@ -685,10 +723,189 @@ fun CampaignSettings(campaign: Campaign, firebaseObject: FirebaseObject){
                 }
             }
 
+            Row (
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+
+                var openDeleteCampaignDialogue by remember {
+                    mutableStateOf(false)
+                }
+
+
+                Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    TextButton(
+                        onClick = {
+                            if (firebaseObject.currentUser!!.uid == campaign.gameMaster)
+                                openDeleteCampaignDialogue = true
+                        },
+
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = tertiaryContainerLight,
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .border(
+                                width = 2.dp,
+                                color = Color.Black,
+                                shape = RoundedCornerShape(8.dp)
+                            ), shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(text = "Delete Campaign", color = Color.Black)
+                    }
+                }
+
+                if(openDeleteCampaignDialogue){
+                    DeleteCampaignDialog(
+                        campaign = campaign,
+                        onDismissRequest = { openDeleteCampaignDialogue = false },
+                        firebaseObject = firebaseObject,
+                        navBackToCampaigns = navBackToCampaigns,
+                        viewModel = viewModel
+                    )
+                }
+
+            }
+
         }
 
     }
 
+}
+
+@Composable
+fun DeleteCampaignDialog(campaign: Campaign, onDismissRequest: () -> Unit, firebaseObject: FirebaseObject, navBackToCampaigns: () -> Unit, viewModel: CampaignViewModel){
+        Dialog(onDismissRequest = onDismissRequest) {
+            Card (modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(16.dp)),
+                colors = CardDefaults.cardColors(containerColor = primaryLight),
+                shape = RoundedCornerShape(16.dp)) {
+                Column (horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Are you sure you'd like to delete this campaign?",
+                        textAlign = TextAlign.Center, modifier = Modifier.padding(10.dp), color = Color.Black)
+
+                    Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically, modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 20.dp)
+                    ) {
+
+                        TextButton(onClick = {
+                            onDismissRequest()
+                        },
+                            modifier = Modifier
+                                .width(80.dp)
+                                .background(color = Color.White, shape = RoundedCornerShape(8.dp))
+                                .border(
+                                    width = 1.dp,
+                                    color = Color.LightGray,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                        ) {
+                            Text(text = "Cancel", color = Color.Black)
+                        }
+
+                        TextButton(onClick = {
+                            if (firebaseObject.currentUser!!.uid == campaign.gameMaster) {
+                                campaign.membersIDs.forEach { member ->
+                                    firebaseObject.removeUserfromCampaign(
+                                        campaignCode = campaign.ID,
+                                        userID = member
+                                    )
+                                }
+                                viewModel.isDeleted = true
+                                campaign.isDeleted = true
+                                navBackToCampaigns()
+                                firebaseObject.deleteCampaign(campaign.ID)
+                                onDismissRequest()
+                            }
+                        },
+                            modifier = Modifier
+                                .width(80.dp)
+                                .background(color = Color.White, shape = RoundedCornerShape(8.dp))
+                                .border(
+                                    width = 1.dp,
+                                    color = Color.LightGray,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                        ) {
+                            Text(text = "Confirm", color = Color.Red)
+                        }
+                    }
+
+
+                }
+            }
+        }
+    }
+
+
+@Composable
+fun LeaveCampaignDialog(member: CampaignMember?, campaign: Campaign, onDismissRequest: () -> Unit, firebaseObject: FirebaseObject, navBackToCampaigns: () -> Unit){
+    if(member != null){
+        Dialog(onDismissRequest = onDismissRequest) {
+            Card (modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(16.dp)),
+                colors = CardDefaults.cardColors(containerColor = primaryLight),
+                shape = RoundedCornerShape(16.dp)) {
+                Column (horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Are you sure you'd like to leave this campaign?",
+                        textAlign = TextAlign.Center, modifier = Modifier.padding(10.dp), color = Color.Black)
+
+                    Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically, modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 20.dp)
+                    ) {
+
+                        TextButton(onClick = {
+                            onDismissRequest()
+                        },
+                            modifier = Modifier
+                                .width(80.dp)
+                                .background(color = Color.White, shape = RoundedCornerShape(8.dp))
+                                .border(
+                                    width = 1.dp,
+                                    color = Color.LightGray,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                        ) {
+                            Text(text = "Cancel", color = Color.Red)
+                        }
+
+                        TextButton(onClick = {
+                            firebaseObject.removeUserfromCampaign(member.userID, campaignCode = campaign.ID)
+                            campaign.membersIDs = campaign.membersIDs.minus(member.userID)
+                            updateCampaign(campaign = campaign, firebaseObject = firebaseObject)
+                            navBackToCampaigns()
+                            onDismissRequest()
+                        },
+                            modifier = Modifier
+                                .width(80.dp)
+                                .background(color = Color.White, shape = RoundedCornerShape(8.dp))
+                                .border(
+                                    width = 1.dp,
+                                    color = Color.LightGray,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                        ) {
+                            Text(text = "Confirm", color = Color.Black)
+                        }
+                    }
+
+
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -852,7 +1069,7 @@ fun RollInfoDialog(onDismissRequest: () -> Unit){
     }
 }
 
-fun SendMessage(campaign: Campaign, firebaseObject: FirebaseObject, message: Message){
+public fun SendMessage(campaign: Campaign, firebaseObject: FirebaseObject, message: Message){
     val diceRoller:DiceRollerObject = DiceRollerObject
 
     if(diceRoller.detectRoll(message.text)){
@@ -1006,7 +1223,7 @@ fun getMemberProfile(campaign:Campaign, memberID:String): CampaignMember? {
 }
 
 public fun updateCampaign(campaign: Campaign, firebaseObject: FirebaseObject){
-    if(campaign != null) {
+    if(campaign != null && !campaign.isDeleted) {
         firebaseObject.firestoreDB.collection("campaigns")
             .document(firebaseObject.currentCampaign!!).set(campaign)
     }

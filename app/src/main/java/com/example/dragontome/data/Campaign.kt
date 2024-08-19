@@ -13,4 +13,7 @@ data class Campaign
 
      var gameMaster: String = "",
 
-     var ID:String = "")
+     var ID:String = "",
+
+     var isDeleted: Boolean = false
+            )

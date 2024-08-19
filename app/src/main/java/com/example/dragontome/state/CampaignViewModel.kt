@@ -23,6 +23,7 @@ class CampaignViewModel(fireBaseObject:FirebaseObject): ViewModel() {
 
     var currentCharacter = OnlineCharacterSheetHolder()
 
+    var isDeleted = false
     init {
         val campaignRef = fireBaseObject.firestoreDB.collection("campaigns").document(fireBaseObject.currentCampaign!!)
         campaignRef.addSnapshotListener{ snapshot, e ->
@@ -30,16 +31,11 @@ class CampaignViewModel(fireBaseObject:FirebaseObject): ViewModel() {
                 Log.d("debug", "On snapshot: $e")
                 return@addSnapshotListener
             }
-            if (snapshot != null) {
+            if (snapshot != null && !isDeleted) {
                 _campaign.value = snapshot.toObject<Campaign>()!!
                 Log.d("debug", "Campaign Updated")
             }
 
         }
     }
-
-
-
-
-
 }

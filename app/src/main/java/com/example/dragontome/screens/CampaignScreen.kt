@@ -157,7 +157,9 @@ fun CampaignScreen(appViewModel: AppViewModel, context: Context){
                         Log.d("debug", "Entering navigation composable. Current campaign: ${firebaseObject.currentCampaign.toString()}")
                     }
 
-                    CampaignViewScreen(firebaseObject = firebaseObject, appviewModel = appViewModel)
+                    CampaignViewScreen(firebaseObject = firebaseObject, appviewModel = appViewModel, navBackToCampaigns = {
+                        navController.navigate(route = CampaignScreens.CAMPAIGNS.name) {popUpTo(0)}
+                    })
                 }
             }
         } else {

@@ -6,6 +6,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.getField
 import com.google.firebase.firestore.toObject
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.streams.asSequence
@@ -107,7 +108,11 @@ object FirebaseObject {
             }
     }
 
-
+fun deleteCampaign(campaignCode: String){
+    firestoreDB.collection("campaigns").document(campaignCode).delete().addOnSuccessListener {
+        Log.d("debug", "Campaign deleted!")
+    }
+}
 
     fun updateUser(){
         if(currentUser != null){
@@ -130,12 +135,15 @@ object FirebaseObject {
         val query = firestoreDB.collection("users").whereEqualTo("email", email)
             .get().addOnSuccessListener { documents ->
                 for (document in documents){
+
                     document.reference.update("campaignList", FieldValue.arrayUnion(campaignCode))
                     Log.d("debug", "Should have added a new user to campaign.")
                     Log.d("debug", "Document ID: ${document.id}")
-                    campaign.membersIDs = campaign.membersIDs.plus(document.id)
-                    campaign.memberProfiles = campaign.memberProfiles.plus(CampaignMember(userID = document.id))
-
+                    if(!campaign.membersIDs.contains(document.id)){
+                        campaign.membersIDs = campaign.membersIDs.plus(document.id)
+                        if (campaign.memberProfiles.filter { it.userID == document.id }.isEmpty())
+                            campaign.memberProfiles = campaign.memberProfiles.plus(CampaignMember(userID = document.id))
+                    }
                     Log.d("debug", "Should have updated relevant campaign fields")
                     onSuccess()
                 }

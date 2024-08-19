@@ -259,7 +259,7 @@ fun CharacterNavBar(
 
 @Composable
 fun CharacterSheetScreen(
-   characterSheetHolder: CharacterSheetHolder = theoChar,
+   characterSheetHolder: CharacterSheetHolder,
    modifier: Modifier = Modifier,
    navController: NavHostController = rememberNavController(),
    appViewModel: AppViewModel
@@ -1011,10 +1011,9 @@ fun CharacterSheetScreen(
    }
 }
 
-@Preview
 @Composable
 fun ClassPopupWindow(
-   characterSheet: CharacterSheet = theoChar.characterSheet,
+   characterSheet: CharacterSheet,
    onDismissRequest: () -> Unit = {},
    updateFunction: () -> Unit = {}
 ){
@@ -1192,10 +1191,9 @@ fun ClassPopupWindow(
    }
 }
 
-@Preview
 @Composable
 fun BasicInfoWindow(
-   characterSheet: CharacterSheet = theoChar.characterSheet,
+   characterSheet: CharacterSheet,
    modifier: Modifier = Modifier,
    refresherFlag: Boolean = false,
    updateFunction: () -> Unit = {}
@@ -1335,10 +1333,9 @@ fun BasicInfoWindow(
    }
 }
 
-@Preview
 @Composable
 fun PrimaryStats(
-    characterSheet: CharacterSheet = theoChar.characterSheet,
+    characterSheet: CharacterSheet,
     refresherFlag: Boolean = false,
     initializer: CharacterSheetInitializer = CharacterSheetInitializer(characterSheet),
     refreshContent: () -> Unit = {},
@@ -1541,10 +1538,9 @@ fun PrimaryStats(
    }
 }
 
-@Preview
 @Composable
 fun AttributesWindow(
-   characterSheet: CharacterSheet = theoChar.characterSheet,
+   characterSheet: CharacterSheet,
    initializer: CharacterSheetInitializer = CharacterSheetInitializer(characterSheet),
    refreshContent: () -> Unit = {},
    refresherFlag:Boolean = false,
@@ -2267,10 +2263,10 @@ fun AttributesWindow(
    }
 }
 
-@Preview
+
 @Composable
    fun StatEntryPopup(
-      statList: StatList = theoChar.characterSheet.proficiencyBonus, //Statlist from the character sheet
+      statList: StatList, //Statlist from the character sheet
       //rememberedStatList: StatList, //Remembered statlist, cause that's apparently the only easy way to change the character sheet one
       statName: String = "Proficiency Bonus:", //Text value for the popup
       delegateStat: StatList = theoChar.characterSheet.strength, //Statlist to get the summed total
@@ -2520,10 +2516,10 @@ fun AttributesWindow(
       }
    }
 
-@Preview
+
 @Composable
    fun IntStatEntryPopup(
-   stat: IntWrapper = theoChar.characterSheet.inspirationPoints,
+   stat: IntWrapper,
    statName: String = "Inspiration Points:",
    onDismissRequest: () -> Unit = {},
    editable: Boolean = false,
@@ -2623,10 +2619,9 @@ fun AttributesWindow(
    }
    }
 
-@Preview
 @Composable
 fun HealthWindow(
-   characterSheet: CharacterSheet = theoChar.characterSheet,
+   characterSheet: CharacterSheet,
    refresherFlag: Boolean = false,
    updateFunction: () -> Unit = {}
 ){
@@ -2799,10 +2794,9 @@ fun HealthWindow(
 
 }
 
-@Preview
 @Composable
 fun SavingThrowWindow(
-   characterSheet: CharacterSheet = theoChar.characterSheet,
+   characterSheet: CharacterSheet,
    initializer: CharacterSheetInitializer = CharacterSheetInitializer(characterSheet),
    refresherFlag: Boolean = false,
    refreshContent: () -> Unit = {},
@@ -3212,10 +3206,9 @@ fun SavingThrowWindow(
    }
 }
 
-@Preview
 @Composable
 fun SkillWindow(
-   characterSheet: CharacterSheet = theoChar.characterSheet,
+   characterSheet: CharacterSheet,
    initializer: CharacterSheetInitializer = CharacterSheetInitializer(characterSheet),
    refresherFlag: Boolean = false,
    refreshContent: () -> Unit = {},
@@ -4518,10 +4511,10 @@ fun SkillWindow(
    }
 }
 
-@Preview
+
 @Composable
 fun AttacksWindow(
-   characterSheet: CharacterSheet = theoChar.characterSheet,
+   characterSheet: CharacterSheet,
    initializer: CharacterSheetInitializer = CharacterSheetInitializer((characterSheet)),
    refresherFlag: Boolean = false,
    refreshContent: () -> Unit = {},
@@ -4703,11 +4696,11 @@ fun AttacksWindow(
    }
 }
 
-@Preview
+
 @Composable
 fun StringWindow(
-   characterSheet: CharacterSheet = theoChar.characterSheet,
-   stringList: StringListWrapper = theoChar.characterSheet.equipment,
+   characterSheet: CharacterSheet,
+   stringList: StringListWrapper,
    refresherFlag: Boolean = false,
    refreshContent: () -> Unit = {},
    title:String = "",
@@ -4828,10 +4821,10 @@ fun StringWindow(
    }
 }
 
-@Preview
+
 @Composable
 fun SpellInfoWindow(
-    characterSheet: CharacterSheet = theoChar.characterSheet,
+    characterSheet: CharacterSheet,
     refresherFlag: Boolean = false,
     refreshContent: () -> Unit = {},
     initializer: CharacterSheetInitializer = CharacterSheetInitializer(characterSheet),
@@ -5043,10 +5036,9 @@ fun SpellInfoWindow(
 
 }
 
-@Preview
 @Composable
 fun BasicAppearanceWindow(
-   characterSheet: CharacterSheet = theoChar.characterSheet,
+   characterSheet: CharacterSheet,
    modifier: Modifier = Modifier,
    refresherFlag: Boolean = false,
    updateFunction: () -> Unit = {}
@@ -5242,7 +5234,7 @@ fun BasicAppearanceWindow(
 
 @Composable
 fun SpellBookWindow(
-   characterSheet: CharacterSheet = theoChar.characterSheet,
+   characterSheet: CharacterSheet,
    refresherFlag: Boolean = false,
    refreshContent: () -> Unit = {},
    updateFunction: () -> Unit = {},
@@ -5412,7 +5404,7 @@ fun SpellBookWindow(
 
 @Composable
 fun SpellCantripWindow(
-   characterSheet: CharacterSheet = theoChar.characterSheet,
+   characterSheet: CharacterSheet,
    refresherFlag: Boolean = false,
    refreshContent: () -> Unit = {},
    spellList: List<Spell>?,
@@ -5454,7 +5446,7 @@ fun SpellCantripWindow(
 
 @Composable
 fun SpellLevelWindow(
-   characterSheet: CharacterSheet = theoChar.characterSheet,
+   characterSheet: CharacterSheet,
    refresherFlag: Boolean = false,
    refreshContent: () -> Unit = {},
    spellList: List<Spell>?,

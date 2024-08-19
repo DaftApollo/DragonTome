@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.room.Room
 import com.example.dragontome.R
+import com.example.dragontome.data.Campaign
 import com.example.dragontome.data.OfflineSpellRepository
 import com.example.dragontome.data.Spell
 import com.example.dragontome.data.SpellDao
@@ -178,6 +179,7 @@ fun SpellCard(
                 modifier = modifier.padding(horizontal = 15.dp, vertical = 5.dp)
             )
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+
                 SpellAddButton(additionMode = additionMode, onClick = onClick, updateFunction = updateFunction, isEditable = isEditable)
             }
         }

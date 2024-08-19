@@ -89,6 +89,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.gms:google-services:4.4.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.3")
+    implementation ("com.google.android.gms:play-services-ads:22.3.0")
 
     implementation ("net.objecthunter:exp4j:0.4.8")
 

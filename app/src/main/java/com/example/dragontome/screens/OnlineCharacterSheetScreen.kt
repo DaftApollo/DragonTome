@@ -73,11 +73,13 @@ import com.example.dragontome.data.CharacterSheetInitializer
 import com.example.dragontome.data.CharacterStat
 import com.example.dragontome.data.FirebaseObject
 import com.example.dragontome.data.IntWrapper
+import com.example.dragontome.data.Message
 import com.example.dragontome.data.OnlineCharacterSheetHolder
 import com.example.dragontome.data.Spell
 import com.example.dragontome.data.StatList
 import com.example.dragontome.data.StringListWrapper
 import com.example.dragontome.data.StringWrapper
+import com.example.dragontome.screens.characterSheetScreens.*
 import com.example.dragontome.state.AppViewModel
 import com.example.dragontome.state.CampaignViewModel
 import com.example.dragontome.ui.theme.addColor
@@ -118,9 +120,9 @@ fun OnlineCharacterSheetScreen(
             var characterClassPopup: Boolean by remember { mutableStateOf(false) }
 
             NavHost(navController = navController,
-                startDestination = characterSheetScreens.Stats.name,
+                startDestination = Stats.name,
                 modifier = Modifier.padding(innerPadding)) {
-                composable(route = characterSheetScreens.Stats.name) {
+                composable(route = Stats.name) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -258,7 +260,9 @@ fun OnlineCharacterSheetScreen(
                                     Log.d("debug", "Should have flagged! Current: ${refreshFlag}")
                                 },
                                 updateFunction = updateFunction,
-                                isEditable = isEditable
+                                isEditable = isEditable,
+                                campaign = campaign,
+                                firebaseObject = firebaseObject
                             )
 
                             Divider(
@@ -288,7 +292,9 @@ fun OnlineCharacterSheetScreen(
                                 },
                                 refresherFlag = refreshFlag,
                                 updateFunction = updateFunction,
-                                isEditable = isEditable)
+                                isEditable = isEditable,
+                                campaign = campaign,
+                                firebaseObject = firebaseObject)
 
                             Divider(
                                 color = Color.Black,
@@ -304,7 +310,9 @@ fun OnlineCharacterSheetScreen(
                                     Log.d("debug", "Should have flagged! Current: ${refreshFlag}")
                                 },
                                 updateFunction = updateFunction,
-                                isEditable = isEditable)
+                                isEditable = isEditable,
+                                campaign = campaign,
+                                firebaseObject = firebaseObject)
 
                             Divider(
                                 color = Color.Black,
@@ -320,13 +328,15 @@ fun OnlineCharacterSheetScreen(
                                     Log.d("debug", "Should have flagged! Current: ${refreshFlag}")
                                 },
                                 updateFunction = updateFunction,
-                                isEditable = isEditable)
+                                isEditable = isEditable,
+                                campaign = campaign,
+                                firebaseObject = firebaseObject)
 
                         }
                     }
                 }
 
-                composable(route = characterSheetScreens.AbilitiesAndInventory.name) {
+                composable(route = AbilitiesAndInventory.name) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -394,7 +404,9 @@ fun OnlineCharacterSheetScreen(
                                     Log.d("debug", "Should have flagged! Current: ${refreshFlag}")
                                 },
                                 updateFunction = updateFunction,
-                                isEditable = isEditable)
+                                isEditable = isEditable,
+                            campaign = campaign,
+                                firebaseObject = firebaseObject)
 
                             Divider(
                                 color = Color.Black,
@@ -670,7 +682,7 @@ fun OnlineCharacterSheetScreen(
                     }
                 }
 
-                composable(route = characterSheetScreens.Spells.name) {
+                composable(route = Spells.name) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -699,7 +711,9 @@ fun OnlineCharacterSheetScreen(
                                 },
                                 initializer = characterSheetInitializer,
                                 updateFunction = updateFunction,
-                                isEditable = isEditable
+                                isEditable = isEditable,
+                                campaign = campaign,
+                                firebaseObject = firebaseObject
                             )
                             Divider(
                                 color = Color.Black,
@@ -721,7 +735,7 @@ fun OnlineCharacterSheetScreen(
                         }
                     }
                 }
-                composable(route = characterSheetScreens.Info.name) {
+                composable(route = Info.name) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -1073,7 +1087,8 @@ fun OnlineSpellLevelWindow(
     viewModel: CampaignViewModel,
     isEditable: Boolean
 ){
-    Card(modifier = Modifier.fillMaxWidth()
+    Card(modifier = Modifier
+        .fillMaxWidth()
         .heightIn(min = 0.dp, max = 500.dp)
         .background(
             color = primaryContainerLight,
@@ -1090,7 +1105,8 @@ fun OnlineSpellLevelWindow(
             Text(
                 text = title,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .padding(vertical = 5.dp)
             )
             Divider(modifier = Modifier.padding(horizontal = 10.dp), color = Color.Black)
@@ -1196,7 +1212,7 @@ fun OnlineSpellLevelWindow(
 
 @Composable
 fun OnlineSpellCantripWindow(
-    characterSheet: CharacterSheet = theoChar.characterSheet,
+    characterSheet: CharacterSheet,
     refresherFlag: Boolean = false,
     refreshContent: () -> Unit = {},
     spellList: List<Spell>?,
@@ -1204,7 +1220,8 @@ fun OnlineSpellCantripWindow(
     updateFunction: () -> Unit = {},
     appViewModel: AppViewModel,
     viewModel: CampaignViewModel){
-    Card(modifier = Modifier.fillMaxWidth()
+    Card(modifier = Modifier
+        .fillMaxWidth()
         .heightIn(min = 0.dp, max = 500.dp)
         .background(
             color = primaryContainerLight,
@@ -1221,7 +1238,8 @@ fun OnlineSpellCantripWindow(
             Text(
                 text = title,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .padding(vertical = 5.dp)
             )
             Divider(modifier = Modifier.padding(horizontal = 10.dp), color = Color.Black)
@@ -1229,7 +1247,6 @@ fun OnlineSpellCantripWindow(
         if (spellList != null) {
             Divider(modifier = Modifier.padding(horizontal = 10.dp), color = Color.LightGray)
             OnlineSpellList(spellList = spellList, appViewModel = appViewModel, additionMode = false, updateFunction = {
-                //appViewModel.updateDatabase(characterSheet = characterSheet)
                 updateFunction()
                 refreshContent()
             },
@@ -1388,12 +1405,14 @@ fun OnlineBasicInfoWindow(
 
 @Composable
 fun OnlinePrimaryStats(
-    characterSheet: CharacterSheet = theoChar.characterSheet,
+    characterSheet: CharacterSheet,
     refresherFlag: Boolean = false,
     initializer: CharacterSheetInitializer = CharacterSheetInitializer(characterSheet),
     refreshContent: () -> Unit = {},
     updateFunction: () -> Unit = {},
-    isEditable: Boolean
+    isEditable: Boolean,
+    campaign: Campaign,
+    firebaseObject: FirebaseObject
 ){
 
     var openProficiencyDialog by remember {
@@ -1421,8 +1440,15 @@ fun OnlinePrimaryStats(
                 enabled = isEditable,
                 modifier = Modifier
                     .size(size = 100.dp)
-                    .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(size = 5.dp))
-                    .background(color = primaryContainerLight, shape = RoundedCornerShape(size = 5.dp))
+                    .border(
+                        width = 2.dp,
+                        color = Color.Black,
+                        shape = RoundedCornerShape(size = 5.dp)
+                    )
+                    .background(
+                        color = primaryContainerLight,
+                        shape = RoundedCornerShape(size = 5.dp)
+                    )
             ) {
 
                 Column (horizontalAlignment = Alignment.CenterHorizontally) {
@@ -1446,8 +1472,15 @@ fun OnlinePrimaryStats(
                 enabled = isEditable,
                 modifier = Modifier
                     .size(size = 100.dp)
-                    .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(size = 5.dp))
-                    .background(color = primaryContainerLight, shape = RoundedCornerShape(size = 5.dp))
+                    .border(
+                        width = 2.dp,
+                        color = Color.Black,
+                        shape = RoundedCornerShape(size = 5.dp)
+                    )
+                    .background(
+                        color = primaryContainerLight,
+                        shape = RoundedCornerShape(size = 5.dp)
+                    )
             ) {
 
                 Column (horizontalAlignment = Alignment.CenterHorizontally) {
@@ -1472,8 +1505,15 @@ fun OnlinePrimaryStats(
                 enabled = isEditable,
                 modifier = Modifier
                     .size(size = 100.dp)
-                    .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(size = 5.dp))
-                    .background(color = primaryContainerLight, shape = RoundedCornerShape(size = 5.dp))
+                    .border(
+                        width = 2.dp,
+                        color = Color.Black,
+                        shape = RoundedCornerShape(size = 5.dp)
+                    )
+                    .background(
+                        color = primaryContainerLight,
+                        shape = RoundedCornerShape(size = 5.dp)
+                    )
             ) {
 
                 Column (horizontalAlignment = Alignment.CenterHorizontally) {
@@ -1490,6 +1530,13 @@ fun OnlinePrimaryStats(
                         fontSize = 20.sp,
                         modifier = Modifier.padding(top = 5.dp)
                     )
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${characterSheet.initiative.sumEntries().toString()}",
+                        titleMessage = "Rolling for Initiative:",
+                        isEditable = isEditable
+                    )
                 }
             }
         }
@@ -1504,8 +1551,15 @@ fun OnlinePrimaryStats(
                 enabled = isEditable,
                 modifier = Modifier
                     .size(size = 100.dp)
-                    .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(size = 5.dp))
-                    .background(color = primaryContainerLight, shape = RoundedCornerShape(size = 5.dp))
+                    .border(
+                        width = 2.dp,
+                        color = Color.Black,
+                        shape = RoundedCornerShape(size = 5.dp)
+                    )
+                    .background(
+                        color = primaryContainerLight,
+                        shape = RoundedCornerShape(size = 5.dp)
+                    )
             ) {
 
                 Column (horizontalAlignment = Alignment.CenterHorizontally) {
@@ -1529,8 +1583,15 @@ fun OnlinePrimaryStats(
                 enabled = isEditable,
                 modifier = Modifier
                     .size(size = 100.dp)
-                    .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(size = 5.dp))
-                    .background(color = primaryContainerLight, shape = RoundedCornerShape(size = 5.dp))
+                    .border(
+                        width = 2.dp,
+                        color = Color.Black,
+                        shape = RoundedCornerShape(size = 5.dp)
+                    )
+                    .background(
+                        color = primaryContainerLight,
+                        shape = RoundedCornerShape(size = 5.dp)
+                    )
             ) {
 
                 Column (horizontalAlignment = Alignment.CenterHorizontally) {
@@ -1783,7 +1844,9 @@ fun OnlineAttributesWindow(
     refreshContent: () -> Unit = {},
     refresherFlag:Boolean = false,
     updateFunction: () -> Unit = {},
-    isEditable: Boolean
+    isEditable: Boolean,
+    campaign: Campaign,
+    firebaseObject: FirebaseObject
 ){
 
     remember {
@@ -1867,7 +1930,7 @@ fun OnlineAttributesWindow(
                 }
                 TextButton(
                     modifier = Modifier
-                        .size(width = 100.dp, height = 65.dp)
+                        .size(width = 100.dp, height = 90.dp)
                         .border(
                             width = 2.dp,
                             color = Color.Black,
@@ -1904,6 +1967,15 @@ fun OnlineAttributesWindow(
                             fontSize = 14.sp,
                             modifier = Modifier.offset(y = -10.dp)
                         )
+                        RollStatButton(
+                            campaign = campaign,
+                            firebaseObject = firebaseObject,
+                            roll = ".roll 1d20 + ${characterSheet.strengthBonus.sumEntries().toString()}",
+                            titleMessage = "Rolling Strength Check...",
+                            isEditable = isEditable
+                        )
+
+
                     }
                 }
             }
@@ -1943,7 +2015,7 @@ fun OnlineAttributesWindow(
                 TextButton(
                     enabled = isEditable,
                     modifier = Modifier
-                        .size(width = 100.dp, height = 65.dp)
+                        .size(width = 100.dp, height = 90.dp)
                         .border(
                             width = 2.dp,
                             color = Color.Black,
@@ -1978,6 +2050,13 @@ fun OnlineAttributesWindow(
                             color = Color.Black,
                             fontSize = 14.sp,
                             modifier = Modifier.offset(y = -10.dp)
+                        )
+                        RollStatButton(
+                            campaign = campaign,
+                            firebaseObject = firebaseObject,
+                            roll = ".roll 1d20 + ${characterSheet.dexterityBonus.sumEntries().toString()}",
+                            titleMessage = "Rolling Dexterity Check...",
+                            isEditable = isEditable
                         )
                     }
                 }
@@ -2019,7 +2098,7 @@ fun OnlineAttributesWindow(
                 TextButton(
                     enabled = isEditable,
                     modifier = Modifier
-                        .size(width = 100.dp, height = 65.dp)
+                        .size(width = 100.dp, height = 90.dp)
                         .border(
                             width = 2.dp,
                             color = Color.Black,
@@ -2054,6 +2133,13 @@ fun OnlineAttributesWindow(
                             color = Color.Black,
                             fontSize = 14.sp,
                             modifier = Modifier.offset(y = -10.dp)
+                        )
+                        RollStatButton(
+                            campaign = campaign,
+                            firebaseObject = firebaseObject,
+                            roll = ".roll 1d20 + ${characterSheet.constitutionBonus.sumEntries().toString()}",
+                            titleMessage = "Rolling Constitution Check...",
+                            isEditable = isEditable
                         )
                     }
                 }
@@ -2097,7 +2183,7 @@ fun OnlineAttributesWindow(
                 TextButton(
                     enabled = isEditable,
                     modifier = Modifier
-                        .size(width = 100.dp, height = 65.dp)
+                        .size(width = 100.dp, height = 90.dp)
                         .border(
                             width = 2.dp,
                             color = Color.Black,
@@ -2132,6 +2218,13 @@ fun OnlineAttributesWindow(
                             color = Color.Black,
                             fontSize = 14.sp,
                             modifier = Modifier.offset(y = -10.dp)
+                        )
+                        RollStatButton(
+                            campaign = campaign,
+                            firebaseObject = firebaseObject,
+                            roll = ".roll 1d20 + ${characterSheet.intelligenceBonus.sumEntries().toString()}",
+                            titleMessage = "Rolling Intelligence Check...",
+                            isEditable = isEditable
                         )
                     }
                 }
@@ -2172,7 +2265,7 @@ fun OnlineAttributesWindow(
                 TextButton(
                     enabled = isEditable,
                     modifier = Modifier
-                        .size(width = 100.dp, height = 65.dp)
+                        .size(width = 100.dp, height = 90.dp)
                         .border(
                             width = 2.dp,
                             color = Color.Black,
@@ -2207,6 +2300,13 @@ fun OnlineAttributesWindow(
                             color = Color.Black,
                             fontSize = 14.sp,
                             modifier = Modifier.offset(y = -10.dp)
+                        )
+                        RollStatButton(
+                            campaign = campaign,
+                            firebaseObject = firebaseObject,
+                            roll = ".roll 1d20 + ${characterSheet.wisdomBonus.sumEntries().toString()}",
+                            titleMessage = "Rolling Wisdom Check...",
+                            isEditable = isEditable
                         )
                     }
                 }
@@ -2247,7 +2347,7 @@ fun OnlineAttributesWindow(
                 TextButton(
                     enabled = isEditable,
                     modifier = Modifier
-                        .size(width = 100.dp, height = 65.dp)
+                        .size(width = 100.dp, height = 90.dp)
                         .border(
                             width = 2.dp,
                             color = Color.Black,
@@ -2282,6 +2382,13 @@ fun OnlineAttributesWindow(
                             color = Color.Black,
                             fontSize = 14.sp,
                             modifier = Modifier.offset(y = -10.dp)
+                        )
+                        RollStatButton(
+                            campaign = campaign,
+                            firebaseObject = firebaseObject,
+                            roll = ".roll 1d20 + ${characterSheet.charismaBonus.sumEntries().toString()}",
+                            titleMessage = "Rolling Charisma Check...",
+                            isEditable = isEditable
                         )
                     }
                 }
@@ -2521,7 +2628,9 @@ fun OnlineSavingThrowWindow(
     refresherFlag: Boolean = false,
     refreshContent: () -> Unit = {},
     updateFunction: () -> Unit = {},
-    isEditable: Boolean
+    isEditable: Boolean,
+    campaign: Campaign,
+    firebaseObject: FirebaseObject
 ){
     var openStrengthSaveDialog by remember {
         mutableStateOf(false)
@@ -2592,274 +2701,377 @@ fun OnlineSavingThrowWindow(
             )
             Row {
 
-                Row (
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth(0.5f)
-                ) {
-                    IconButton(onClick = {
-                        strengthProficiency = !strengthProficiency
-                        characterSheet.strengthSavingThrow.proficiency = strengthProficiency
-                        Log.d("debug", "Should have toggled. Proficiency: ${strengthProficiency}")
-                        initializer.refreshStrengthSave()
-                        refreshContent()
-                        updateFunction()
-                    },
-                        enabled = isEditable,
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (strengthProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)) {
-                    }
-                    Text(text = "Strength:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(end = 15.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openStrengthSaveDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                            .fillMaxWidth(0.5f)
                     ) {
+                        IconButton(
+                            onClick = {
+                                strengthProficiency = !strengthProficiency
+                                characterSheet.strengthSavingThrow.proficiency = strengthProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${strengthProficiency}"
+                                )
+                                initializer.refreshStrengthSave()
+                                refreshContent()
+                                updateFunction()
+                            },
+                            enabled = isEditable,
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (strengthProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) {
+                        }
                         Text(
-                            text = strengthSave.sumEntries().toString(),
-                            color = Color.Black,
+                            text = "Strength:",
+                            textAlign = TextAlign.Start,
                             fontSize = 16.sp,
-                            maxLines = 1
+                            modifier = Modifier.padding(end = 15.dp)
                         )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openStrengthSaveDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = strengthSave.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
                     }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${strengthSave.sumEntries().toString()}",
+                        titleMessage = "Rolling Strength Save...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
                 }
-                Row (
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth()
-                ) {
-                    IconButton(onClick = {
-                        dexterityProficiency = !dexterityProficiency
-                        characterSheet.dexteritySavingThrow.proficiency = dexterityProficiency
-                        Log.d("debug", "Should have toggled. Proficiency: ${dexterityProficiency}")
-                        initializer.refreshDexteritySave()
-                        refreshContent()
-                        updateFunction()
-                    },
-                        enabled = isEditable,
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (dexterityProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
-                    ) { }
-                    Text(text = "Dexterity:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(end = 15.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openDexteritySaveDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                            .fillMaxWidth()
                     ) {
+                        IconButton(
+                            onClick = {
+                                dexterityProficiency = !dexterityProficiency
+                                characterSheet.dexteritySavingThrow.proficiency =
+                                    dexterityProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${dexterityProficiency}"
+                                )
+                                initializer.refreshDexteritySave()
+                                refreshContent()
+                                updateFunction()
+                            },
+                            enabled = isEditable,
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (dexterityProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) { }
                         Text(
-                            text = dexteritySave.sumEntries().toString(),
-                            color = Color.Black,
+                            text = "Dexterity:",
+                            textAlign = TextAlign.Start,
                             fontSize = 16.sp,
-                            maxLines = 1
+                            modifier = Modifier.padding(end = 15.dp)
                         )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openDexteritySaveDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = dexteritySave.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
                     }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${dexteritySave.sumEntries().toString()}",
+                        titleMessage = "Rolling Dexterity Save...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
                 }
             }
             Row {
-                Row (
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth(0.5f)
-                ) {
-                    IconButton(onClick = {
-                        constitutionProficiency = !constitutionProficiency
-                        characterSheet.constitutionSavingThrow.proficiency = constitutionProficiency
-                        Log.d("debug", "Should have toggled. Proficiency: ${constitutionProficiency}")
-                        initializer.refreshConstitutionSave()
-                        refreshContent()
-                        updateFunction()
-                    },
-                        enabled = isEditable,
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (constitutionProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)) {
-                    }
-                    Text(text = "Constitution:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 13.sp,
-                        modifier = Modifier.padding(end = 15.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openConstitutionSaveDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                            .fillMaxWidth(0.5f)
                     ) {
+                        IconButton(
+                            onClick = {
+                                constitutionProficiency = !constitutionProficiency
+                                characterSheet.constitutionSavingThrow.proficiency =
+                                    constitutionProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${constitutionProficiency}"
+                                )
+                                initializer.refreshConstitutionSave()
+                                refreshContent()
+                                updateFunction()
+                            },
+                            enabled = isEditable,
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (constitutionProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) {
+                        }
                         Text(
-                            text = constitutionSave.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
+                            text = "Constitution:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(end = 15.dp)
                         )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openConstitutionSaveDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = constitutionSave.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
                     }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${constitutionSave.sumEntries().toString()}",
+                        titleMessage = "Rolling Constitution Save...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
                 }
-                Row (
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth()
-                ) {
-                    IconButton(onClick = {
-                        intelligenceProficiency = !intelligenceProficiency
-                        characterSheet.intelligenceSavingThrow.proficiency = intelligenceProficiency
-                        Log.d("debug", "Should have toggled. Proficiency: ${intelligenceProficiency}")
-                        initializer.refreshIntelligenceSave()
-                        refreshContent()
-                        updateFunction()
-                    },
-                        enabled = isEditable,
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (intelligenceProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
-                    ) { }
-                    Text(text = "Intelligence:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(end = 15.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openIntelligenceSaveDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                            .fillMaxWidth()
                     ) {
+                        IconButton(
+                            onClick = {
+                                intelligenceProficiency = !intelligenceProficiency
+                                characterSheet.intelligenceSavingThrow.proficiency =
+                                    intelligenceProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${intelligenceProficiency}"
+                                )
+                                initializer.refreshIntelligenceSave()
+                                refreshContent()
+                                updateFunction()
+                            },
+                            enabled = isEditable,
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (intelligenceProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) { }
                         Text(
-                            text = intelligenceSave.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
+                            text = "Intelligence:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 13.sp,
+                            modifier = Modifier.padding(end = 15.dp)
                         )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openIntelligenceSaveDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = intelligenceSave.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
                     }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${intelligenceSave.sumEntries().toString()}",
+                        titleMessage = "Rolling Intelligence Save...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
                 }
             }
             Row {
 
-                Row (
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth(0.5f)
-                ) {
-                    IconButton(onClick = {
-                        wisdomProficiency = !wisdomProficiency
-                        characterSheet.wisdomSavingThrow.proficiency = wisdomProficiency
-                        Log.d("debug", "Should have toggled. Proficiency: ${wisdomProficiency}")
-                        initializer.refreshWisdomSave()
-                        refreshContent()
-                        updateFunction()
-                    },
-                        enabled = isEditable,
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (wisdomProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)) {
-                    }
-                    Text(text = "Wisdom:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(end = 15.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openWisdomSaveDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                            .fillMaxWidth(0.5f)
                     ) {
+                        IconButton(
+                            onClick = {
+                                wisdomProficiency = !wisdomProficiency
+                                characterSheet.wisdomSavingThrow.proficiency = wisdomProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${wisdomProficiency}"
+                                )
+                                initializer.refreshWisdomSave()
+                                refreshContent()
+                                updateFunction()
+                            },
+                            enabled = isEditable,
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (wisdomProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) {
+                        }
                         Text(
-                            text = wisdomSave.sumEntries().toString(),
-                            color = Color.Black,
+                            text = "Wisdom:",
+                            textAlign = TextAlign.Start,
                             fontSize = 16.sp,
-                            maxLines = 1
+                            modifier = Modifier.padding(end = 15.dp)
                         )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openWisdomSaveDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = wisdomSave.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
+
                     }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${wisdomSave.sumEntries().toString()}",
+                        titleMessage = "Rolling Wisdom Save...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
                 }
-                Row (
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth()
-                ) {
-                    IconButton(onClick = {
-                        charismaProficiency = !charismaProficiency
-                        characterSheet.charismaSavingThrow.proficiency = charismaProficiency
-                        Log.d("debug", "Should have toggled. Proficiency: ${charismaProficiency}")
-                        initializer.refreshCharismaSave()
-                        refreshContent()
-                        updateFunction()
-                    },
-                        enabled = isEditable,
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (charismaProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
-                    ) { }
-                    Text(text = "Charisma:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(end = 15.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openCharismaSaveDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                            .fillMaxWidth()
                     ) {
+                        IconButton(
+                            onClick = {
+                                charismaProficiency = !charismaProficiency
+                                characterSheet.charismaSavingThrow.proficiency = charismaProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${charismaProficiency}"
+                                )
+                                initializer.refreshCharismaSave()
+                                refreshContent()
+                                updateFunction()
+                            },
+                            enabled = isEditable,
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (charismaProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) { }
                         Text(
-                            text = charismaSave.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
+                            text = "Charisma:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(end = 15.dp)
                         )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openCharismaSaveDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = charismaSave.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
                     }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${charismaSave.sumEntries().toString()}",
+                        titleMessage = "Rolling Charisma Save...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
                 }
             }
         }
@@ -2946,7 +3158,9 @@ fun OnlineSkillWindow(
     refresherFlag: Boolean = false,
     refreshContent: () -> Unit = {},
     updateFunction: () -> Unit = {},
-    isEditable: Boolean
+    isEditable: Boolean,
+    campaign:Campaign,
+    firebaseObject: FirebaseObject
 ){
     var acrobaticsProficiency by remember {
         mutableStateOf(characterSheet.acrobatics.proficiency)
@@ -3131,903 +3345,1156 @@ fun OnlineSkillWindow(
                 modifier = Modifier.padding(vertical = 5.dp)
             )
             Row {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth(0.5f)
-                ) {
-                    IconButton(
-                        enabled = isEditable,
-                        onClick = {
-                            acrobaticsProficiency = !acrobaticsProficiency
-                            characterSheet.acrobatics.proficiency = acrobaticsProficiency
-                            Log.d("debug", "Should have toggled. Proficiency: ${acrobaticsProficiency}")
-                            initializer.refreshAcrobatics()
-                            updateFunction()
-                            refreshContent()
-                        },
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (acrobaticsProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
+                            .fillMaxWidth(0.5f)
                     ) {
-                    }
-                    Text(
-                        text = "Acrobatics:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(end = 15.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openAcrobaticsDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
-                    ) {
+                        IconButton(
+                            enabled = isEditable,
+                            onClick = {
+                                acrobaticsProficiency = !acrobaticsProficiency
+                                characterSheet.acrobatics.proficiency = acrobaticsProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${acrobaticsProficiency}"
+                                )
+                                initializer.refreshAcrobatics()
+                                updateFunction()
+                                refreshContent()
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (acrobaticsProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) {
+                        }
                         Text(
-                            text = if(acrobaticsCheck.sumEntries() > 0) "+" + acrobaticsCheck.sumEntries().toString()
-                            else acrobaticsCheck.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
+                            text = "Acrobatics:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(end = 15.dp)
                         )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openAcrobaticsDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = if (acrobaticsCheck.sumEntries() > 0) "+" + acrobaticsCheck.sumEntries()
+                                    .toString()
+                                else acrobaticsCheck.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
                     }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${acrobaticsCheck.sumEntries().toString()}",
+                        titleMessage = "Rolling Acrobatics Check...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
                 }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth()
-                ) {
-                    IconButton(
-                        enabled = isEditable,
-                        onClick = {
-                            animalHandlingProficiency = !animalHandlingProficiency
-                            characterSheet.animalhandling.proficiency = animalHandlingProficiency
-                            Log.d(
-                                "debug",
-                                "Should have toggled. Proficiency: ${animalHandlingProficiency}"
-                            )
-                            initializer.refreshAnimalHandling()
-                            updateFunction()
-                            refreshContent()
-                        },
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (animalHandlingProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
-                    ) { }
-                    Text(
-                        text = "Animal Handling:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(end = 15.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openAnimalHandlingDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                            .fillMaxWidth()
                     ) {
+                        IconButton(
+                            enabled = isEditable,
+                            onClick = {
+                                animalHandlingProficiency = !animalHandlingProficiency
+                                characterSheet.animalhandling.proficiency =
+                                    animalHandlingProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${animalHandlingProficiency}"
+                                )
+                                initializer.refreshAnimalHandling()
+                                updateFunction()
+                                refreshContent()
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (animalHandlingProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) { }
                         Text(
-                            text = if(animalHandlingCheck.sumEntries() > 0) "+" + animalHandlingCheck.sumEntries().toString()
-                            else animalHandlingCheck.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
+                            text = "Animal Handling:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(end = 15.dp)
                         )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openAnimalHandlingDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = if (animalHandlingCheck.sumEntries() > 0) "+" + animalHandlingCheck.sumEntries()
+                                    .toString()
+                                else animalHandlingCheck.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
                     }
-                }
-            }
-            Row {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth(0.5f)
-                ) {
-                    IconButton(
-                        enabled = isEditable,
-                        onClick = {
-                            arcanaProficiency = !arcanaProficiency
-                            characterSheet.arcana.proficiency = arcanaProficiency
-                            Log.d("debug", "Should have toggled. Proficiency: ${arcanaProficiency}")
-                            initializer.refreshArcana()
-                            updateFunction()
-                            refreshContent()
-                        },
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${animalHandlingCheck.sumEntries().toString()}",
+                        titleMessage = "Rolling Animal Handling Check...",
+                        isEditable = isEditable,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (arcanaProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
-                    ) {
-                    }
-                    Text(
-                        text = "Arcana:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(end = 44.dp)
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
                     )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openArcanaDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
-                    ) {
-                        Text(
-                            text = if(arcanaCheck.sumEntries() > 0) "+" + arcanaCheck.sumEntries().toString()
-                            else arcanaCheck.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
-                        )
-                    }
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth()
-                ) {
-                    IconButton(
-                        enabled = isEditable,
-                        onClick = {
-                            athleticsProficiency = !athleticsProficiency
-                            characterSheet.athletics.proficiency = athleticsProficiency
-                            Log.d(
-                                "debug",
-                                "Should have toggled. Proficiency: ${athleticsProficiency}"
-                            )
-                            initializer.refreshAthletics()
-                            updateFunction()
-                            refreshContent()
-                        },
-                        modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (athleticsProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
-                    ) { }
-                    Text(
-                        text = "Athletics:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(end = 32.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openAthleticsDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
-                    ) {
-                        Text(
-                            text = if(athleticsCheck.sumEntries() > 0) "+" + athleticsCheck.sumEntries().toString()
-                            else athleticsCheck.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
-                        )
-                    }
                 }
             }
             Row {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth(0.5f)
-                ) {
-                    IconButton(
-                        enabled = isEditable,
-                        onClick = {
-                            deceptionProficiency = !deceptionProficiency
-                            characterSheet.deception.proficiency = deceptionProficiency
-                            Log.d("debug", "Should have toggled. Proficiency: ${deceptionProficiency}")
-                            initializer.refreshDeception()
-                            updateFunction()
-                            refreshContent()
-                        },
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (deceptionProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
+                            .fillMaxWidth(0.5f)
                     ) {
-                    }
-                    Text(
-                        text = "Deception:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(end = 20.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openDeceptionDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
-                    ) {
+                        IconButton(
+                            enabled = isEditable,
+                            onClick = {
+                                arcanaProficiency = !arcanaProficiency
+                                characterSheet.arcana.proficiency = arcanaProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${arcanaProficiency}"
+                                )
+                                initializer.refreshArcana()
+                                updateFunction()
+                                refreshContent()
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (arcanaProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) {
+                        }
                         Text(
-                            text = if(deceptionCheck.sumEntries() > 0) "+" + deceptionCheck.sumEntries().toString()
-                            else deceptionCheck.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
+                            text = "Arcana:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(end = 44.dp)
                         )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openArcanaDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = if (arcanaCheck.sumEntries() > 0) "+" + arcanaCheck.sumEntries()
+                                    .toString()
+                                else arcanaCheck.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
                     }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${arcanaCheck.sumEntries().toString()}",
+                        titleMessage = "Rolling Arcana Check...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
                 }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth()
-                ) {
-                    IconButton(
-                        enabled = isEditable,
-                        onClick = {
-                            historyProficiency = !historyProficiency
-                            characterSheet.history.proficiency = historyProficiency
-                            Log.d(
-                                "debug",
-                                "Should have toggled. Proficiency: ${historyProficiency}"
-                            )
-                            initializer.refreshHistory()
-                            updateFunction()
-                            refreshContent()
-                        },
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (historyProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
-                    ) { }
-                    Text(
-                        text = "History:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(end = 44.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openHistoryDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                            .fillMaxWidth()
                     ) {
+                        IconButton(
+                            enabled = isEditable,
+                            onClick = {
+                                athleticsProficiency = !athleticsProficiency
+                                characterSheet.athletics.proficiency = athleticsProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${athleticsProficiency}"
+                                )
+                                initializer.refreshAthletics()
+                                updateFunction()
+                                refreshContent()
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (athleticsProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) { }
                         Text(
-                            text = if(historyCheck.sumEntries() > 0) "+" + historyCheck.sumEntries().toString()
-                            else historyCheck.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
+                            text = "Athletics:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(end = 32.dp)
                         )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openAthleticsDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = if (athleticsCheck.sumEntries() > 0) "+" + athleticsCheck.sumEntries()
+                                    .toString()
+                                else athleticsCheck.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
                     }
-                }
-            }
-            Row {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth(0.5f)
-                ) {
-                    IconButton(
-                        enabled = isEditable,
-                        onClick = {
-                            insightProficiency = !insightProficiency
-                            characterSheet.insight.proficiency = insightProficiency
-                            Log.d("debug", "Should have toggled. Proficiency: ${insightProficiency}")
-                            initializer.refreshInsight()
-                            updateFunction()
-                            refreshContent()
-                        },
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${athleticsCheck.sumEntries().toString()}",
+                        titleMessage = "Rolling Athletics Check...",
+                        isEditable = isEditable,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (insightProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
-                    ) {
-                    }
-                    Text(
-                        text = "Insight:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(end = 45.dp)
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
                     )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openInsightDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
-                    ) {
-                        Text(
-                            text = if(insightCheck.sumEntries() > 0) "+" + insightCheck.sumEntries().toString()
-                            else insightCheck.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
-                        )
-                    }
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth()
-                ) {
-                    IconButton(
-                        enabled = isEditable,
-                        onClick = {
-                            intimidationProficiency = !intimidationProficiency
-                            characterSheet.intimidation.proficiency = intimidationProficiency
-                            Log.d(
-                                "debug",
-                                "Should have toggled. Proficiency: ${intimidationProficiency}"
-                            )
-                            initializer.refreshIntimidation()
-                            updateFunction()
-                            refreshContent()
-                        },
-                        modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (intimidationProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
-                    ) { }
-                    Text(
-                        text = "Intimidation:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 17.sp,
-                        modifier = Modifier.padding(end = 13.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openIntimidationDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
-                    ) {
-                        Text(
-                            text = if(intimidationCheck.sumEntries() > 0) "+" + intimidationCheck.sumEntries().toString()
-                            else intimidationCheck.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
-                        )
-                    }
                 }
             }
             Row {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth(0.5f)
-                ) {
-                    IconButton(
-                        enabled = isEditable,
-                        onClick = {
-                            investigationProficiency = !investigationProficiency
-                            characterSheet.investigation.proficiency = investigationProficiency
-                            Log.d("debug", "Should have toggled. Proficiency: ${investigationProficiency}")
-                            initializer.refreshInvestigation()
-                            updateFunction()
-                            refreshContent()
-                        },
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (investigationProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
+                            .fillMaxWidth(0.5f)
                     ) {
-                    }
-                    Text(
-                        text = "Investigation:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 15.sp,
-                        modifier = Modifier.padding(end = 14.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openInvestigationDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
-                    ) {
+                        IconButton(
+                            enabled = isEditable,
+                            onClick = {
+                                deceptionProficiency = !deceptionProficiency
+                                characterSheet.deception.proficiency = deceptionProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${deceptionProficiency}"
+                                )
+                                initializer.refreshDeception()
+                                updateFunction()
+                                refreshContent()
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (deceptionProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) {
+                        }
                         Text(
-                            text = if(investigationCheck.sumEntries() > 0) "+" + investigationCheck.sumEntries().toString()
-                            else investigationCheck.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
+                            text = "Deception:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(end = 20.dp)
                         )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openDeceptionDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = if (deceptionCheck.sumEntries() > 0) "+" + deceptionCheck.sumEntries()
+                                    .toString()
+                                else deceptionCheck.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
                     }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${deceptionCheck.sumEntries().toString()}",
+                        titleMessage = "Rolling Deception Check...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
                 }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth()
-                ) {
-                    IconButton(
-                        enabled = isEditable,
-                        onClick = {
-                            medicineProficiency = !medicineProficiency
-                            characterSheet.medicine.proficiency = medicineProficiency
-                            Log.d(
-                                "debug",
-                                "Should have toggled. Proficiency: ${medicineProficiency}"
-                            )
-                            initializer.refreshMedicine()
-                            updateFunction()
-                            refreshContent()
-                        },
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (medicineProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
-                    ) { }
-                    Text(
-                        text = "Medicine:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(end = 27.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openMedicineDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                            .fillMaxWidth()
                     ) {
+                        IconButton(
+                            enabled = isEditable,
+                            onClick = {
+                                historyProficiency = !historyProficiency
+                                characterSheet.history.proficiency = historyProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${historyProficiency}"
+                                )
+                                initializer.refreshHistory()
+                                updateFunction()
+                                refreshContent()
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (historyProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) { }
                         Text(
-                            text = if(medicineCheck.sumEntries() > 0) "+" + medicineCheck.sumEntries().toString()
-                            else medicineCheck.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
+                            text = "History:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(end = 44.dp)
                         )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openHistoryDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = if (historyCheck.sumEntries() > 0) "+" + historyCheck.sumEntries()
+                                    .toString()
+                                else historyCheck.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
                     }
-                }
-            }
-            Row {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth(0.5f)
-                ) {
-                    IconButton(
-                        enabled = isEditable,
-                        onClick = {
-                            natureProficiency = !natureProficiency
-                            characterSheet.nature.proficiency = natureProficiency
-                            Log.d("debug", "Should have toggled. Proficiency: ${natureProficiency}")
-                            initializer.refreshNature()
-                            updateFunction()
-                            refreshContent()
-                        },
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${historyCheck.sumEntries().toString()}",
+                        titleMessage = "Rolling History Check...",
+                        isEditable = isEditable,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (natureProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
-                    ) {
-                    }
-                    Text(
-                        text = "Nature:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(end = 44.dp)
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
                     )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openNatureDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
-                    ) {
-                        Text(
-                            text = if(natureCheck.sumEntries() > 0) "+" + natureCheck.sumEntries().toString()
-                            else natureCheck.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
-                        )
-                    }
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth()
-                ) {
-                    IconButton(
-                        enabled = isEditable,
-                        onClick = {
-                            perceptionProficiency = !perceptionProficiency
-                            characterSheet.perception.proficiency = perceptionProficiency
-                            Log.d(
-                                "debug",
-                                "Should have toggled. Proficiency: ${perceptionProficiency}"
-                            )
-                            initializer.refreshPerception()
-                            updateFunction()
-                            refreshContent()
-                        },
-                        modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (perceptionProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
-                    ) { }
-                    Text(
-                        text = "Perception:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 17.sp,
-                        modifier = Modifier.padding(end = 20.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openPerceptionDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
-                    ) {
-                        Text(
-                            text = if(perceptionCheck.sumEntries() > 0) "+" + perceptionCheck.sumEntries().toString()
-                            else perceptionCheck.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
-                        )
-                    }
                 }
             }
             Row {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth(0.5f)
-                ) {
-                    IconButton(
-                        enabled = isEditable,
-                        onClick = {
-                            performanceProficiency = !performanceProficiency
-                            characterSheet.performance.proficiency = performanceProficiency
-                            Log.d("debug", "Should have toggled. Proficiency: ${performanceProficiency}")
-                            initializer.refreshPerformance()
-                            updateFunction()
-                            refreshContent()
-                        },
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (performanceProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
+                            .fillMaxWidth(0.5f)
                     ) {
-                    }
-                    Text(
-                        text = "Performance:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 15.sp,
-                        modifier = Modifier.padding(end = 12.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openPerformanceDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
-                    ) {
+                        IconButton(
+                            enabled = isEditable,
+                            onClick = {
+                                insightProficiency = !insightProficiency
+                                characterSheet.insight.proficiency = insightProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${insightProficiency}"
+                                )
+                                initializer.refreshInsight()
+                                updateFunction()
+                                refreshContent()
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (insightProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) {
+                        }
                         Text(
-                            text = if(performanceCheck.sumEntries() > 0) "+" + performanceCheck.sumEntries().toString()
-                            else performanceCheck.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
+                            text = "Insight:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(end = 45.dp)
                         )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openInsightDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = if (insightCheck.sumEntries() > 0) "+" + insightCheck.sumEntries()
+                                    .toString()
+                                else insightCheck.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
                     }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${insightCheck.sumEntries().toString()}",
+                        titleMessage = "Rolling Insight Check...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
                 }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth()
-                ) {
-                    IconButton(
-                        enabled = isEditable,
-                        onClick = {
-                            persuasionProficiency = !persuasionProficiency
-                            characterSheet.persuasion.proficiency = persuasionProficiency
-                            Log.d("debug", "Should have toggled. Proficiency: ${persuasionProficiency}")
-                            initializer.refreshPersuasion()
-                            updateFunction()
-                            refreshContent()
-                        },
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (persuasionProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
+                            .fillMaxWidth()
                     ) {
-                    }
-                    Text(
-                        text = "Persuasion:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(end = 20.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openPersuasionDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
-                    ) {
+                        IconButton(
+                            enabled = isEditable,
+                            onClick = {
+                                intimidationProficiency = !intimidationProficiency
+                                characterSheet.intimidation.proficiency = intimidationProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${intimidationProficiency}"
+                                )
+                                initializer.refreshIntimidation()
+                                updateFunction()
+                                refreshContent()
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (intimidationProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) { }
                         Text(
-                            text = if(persuasionCheck.sumEntries() > 0) "+" + persuasionCheck.sumEntries().toString()
-                            else persuasionCheck.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
+                            text = "Intimidation:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 17.sp,
+                            modifier = Modifier.padding(end = 13.dp)
                         )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openIntimidationDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = if (intimidationCheck.sumEntries() > 0) "+" + intimidationCheck.sumEntries()
+                                    .toString()
+                                else intimidationCheck.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
                     }
-                }
-            }
-            Row {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth(0.5f)
-                ) {
-                    IconButton(
-                        enabled = isEditable,
-                        onClick = {
-                            religionProficiency = !religionProficiency
-                            characterSheet.religion.proficiency = religionProficiency
-                            Log.d("debug", "Should have toggled. Proficiency: ${religionProficiency}")
-                            initializer.refreshReligion()
-                            updateFunction()
-                            refreshContent()
-                        },
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${intimidationCheck.sumEntries().toString()}",
+                        titleMessage = "Rolling Intimidation Check...",
+                        isEditable = isEditable,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (religionProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
-                    ) {
-                    }
-                    Text(
-                        text = "Religion:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(end = 34.dp)
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
                     )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openReligionDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
-                    ) {
-                        Text(
-                            text = if(religionCheck.sumEntries() > 0) "+" + religionCheck.sumEntries().toString()
-                            else religionCheck.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
-                        )
-                    }
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth()
-                ) {
-                    IconButton(
-                        enabled = isEditable,
-                        onClick = {
-                            slightOfHandProficiency = !slightOfHandProficiency
-                            characterSheet.slightOfHand.proficiency = slightOfHandProficiency
-                            Log.d("debug", "Should have toggled. Proficiency: ${slightOfHandProficiency}")
-                            initializer.refreshSlightOfHand()
-                            updateFunction()
-                            refreshContent()
-                        },
-                        modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (slightOfHandProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
-                    ) {
-                    }
-                    Text(
-                        text = "Slight of Hand:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 13.sp,
-                        modifier = Modifier.padding(end = 20.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openSlightOfHandDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
-                    ) {
-                        Text(
-                            text = if(slightOfHandCheck.sumEntries() > 0) "+" + slightOfHandCheck.sumEntries().toString()
-                            else slightOfHandCheck.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
-                        )
-                    }
                 }
             }
             Row {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth(0.5f)
-                ) {
-                    IconButton(
-                        enabled = isEditable,
-                        onClick = {
-                            stealthProficiency = !stealthProficiency
-                            characterSheet.stealth.proficiency = stealthProficiency
-                            Log.d("debug", "Should have toggled. Proficiency: ${stealthProficiency}")
-                            initializer.refreshStealth()
-                            updateFunction()
-                            refreshContent()
-                        },
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (stealthProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
+                            .fillMaxWidth(0.5f)
                     ) {
-                    }
-                    Text(
-                        text = "Stealth:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(end = 42.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openStealthDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
-                    ) {
+                        IconButton(
+                            enabled = isEditable,
+                            onClick = {
+                                investigationProficiency = !investigationProficiency
+                                characterSheet.investigation.proficiency = investigationProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${investigationProficiency}"
+                                )
+                                initializer.refreshInvestigation()
+                                updateFunction()
+                                refreshContent()
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (investigationProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) {
+                        }
                         Text(
-                            text = if(stealthCheck.sumEntries() > 0) "+" + stealthCheck.sumEntries().toString()
-                            else stealthCheck.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
+                            text = "Investigation:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 15.sp,
+                            modifier = Modifier.padding(end = 14.dp)
                         )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openInvestigationDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = if (investigationCheck.sumEntries() > 0) "+" + investigationCheck.sumEntries()
+                                    .toString()
+                                else investigationCheck.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
                     }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${investigationCheck.sumEntries().toString()}",
+                        titleMessage = "Rolling Investigation Check...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
                 }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .border(width = 1.dp, color = Color.LightGray)
-                        .fillMaxWidth()
-                ) {
-                    IconButton(
-                        enabled = isEditable,
-                        onClick = {
-                            survivalProficiency = !survivalProficiency
-                            characterSheet.survival.proficiency = survivalProficiency
-                            Log.d("debug", "Should have toggled. Proficiency: ${survivalProficiency}")
-                            initializer.refreshSurvival()
-                            updateFunction()
-                            refreshContent()
-                        },
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(horizontal = 7.dp)
-                            .background(
-                                color = if (survivalProficiency) Color.LightGray else Color.White,
-                                shape = CircleShape
-                            )
-                            .border(width = 1.dp, color = Color.Black, shape = CircleShape)
-                            .size(size = 20.dp)
+                            .fillMaxWidth()
                     ) {
-                    }
-                    Text(
-                        text = "Survival:",
-                        textAlign = TextAlign.Start,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(end = 36.dp)
-                    )
-                    TextButton(
-                        enabled = isEditable,
-                        onClick = { openSurvivalDialog = true },
-                        contentPadding = PaddingValues(all = 0.dp),
-                        modifier = Modifier.offset(x = -10.dp),
-                        colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
-                    ) {
+                        IconButton(
+                            enabled = isEditable,
+                            onClick = {
+                                medicineProficiency = !medicineProficiency
+                                characterSheet.medicine.proficiency = medicineProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${medicineProficiency}"
+                                )
+                                initializer.refreshMedicine()
+                                updateFunction()
+                                refreshContent()
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (medicineProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) { }
                         Text(
-                            text = if(survivalCheck.sumEntries() > 0) "+" + survivalCheck.sumEntries().toString()
-                            else survivalCheck.sumEntries().toString(),
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            maxLines = 1
+                            text = "Medicine:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(end = 27.dp)
                         )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openMedicineDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = if (medicineCheck.sumEntries() > 0) "+" + medicineCheck.sumEntries()
+                                    .toString()
+                                else medicineCheck.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
                     }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${medicineCheck.sumEntries().toString()}",
+                        titleMessage = "Rolling Medicine Check...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
+                }
+            }
+            Row {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth(0.5f)
+                    ) {
+                        IconButton(
+                            enabled = isEditable,
+                            onClick = {
+                                natureProficiency = !natureProficiency
+                                characterSheet.nature.proficiency = natureProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${natureProficiency}"
+                                )
+                                initializer.refreshNature()
+                                updateFunction()
+                                refreshContent()
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (natureProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) {
+                        }
+                        Text(
+                            text = "Nature:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(end = 44.dp)
+                        )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openNatureDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = if (natureCheck.sumEntries() > 0) "+" + natureCheck.sumEntries()
+                                    .toString()
+                                else natureCheck.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${natureCheck.sumEntries().toString()}",
+                        titleMessage = "Rolling Nature Check...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        IconButton(
+                            enabled = isEditable,
+                            onClick = {
+                                perceptionProficiency = !perceptionProficiency
+                                characterSheet.perception.proficiency = perceptionProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${perceptionProficiency}"
+                                )
+                                initializer.refreshPerception()
+                                updateFunction()
+                                refreshContent()
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (perceptionProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) { }
+                        Text(
+                            text = "Perception:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 17.sp,
+                            modifier = Modifier.padding(end = 20.dp)
+                        )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openPerceptionDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = if (perceptionCheck.sumEntries() > 0) "+" + perceptionCheck.sumEntries()
+                                    .toString()
+                                else perceptionCheck.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${perceptionCheck.sumEntries().toString()}",
+                        titleMessage = "Rolling Perception Check...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
+                }
+            }
+            Row {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth(0.5f)
+                    ) {
+                        IconButton(
+                            enabled = isEditable,
+                            onClick = {
+                                performanceProficiency = !performanceProficiency
+                                characterSheet.performance.proficiency = performanceProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${performanceProficiency}"
+                                )
+                                initializer.refreshPerformance()
+                                updateFunction()
+                                refreshContent()
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (performanceProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) {
+                        }
+                        Text(
+                            text = "Performance:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 15.sp,
+                            modifier = Modifier.padding(end = 12.dp)
+                        )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openPerformanceDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = if (performanceCheck.sumEntries() > 0) "+" + performanceCheck.sumEntries()
+                                    .toString()
+                                else performanceCheck.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${performanceCheck.sumEntries().toString()}",
+                        titleMessage = "Rolling Performance Check...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        IconButton(
+                            enabled = isEditable,
+                            onClick = {
+                                persuasionProficiency = !persuasionProficiency
+                                characterSheet.persuasion.proficiency = persuasionProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${persuasionProficiency}"
+                                )
+                                initializer.refreshPersuasion()
+                                updateFunction()
+                                refreshContent()
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (persuasionProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) {
+                        }
+                        Text(
+                            text = "Persuasion:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(end = 20.dp)
+                        )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openPersuasionDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = if (persuasionCheck.sumEntries() > 0) "+" + persuasionCheck.sumEntries()
+                                    .toString()
+                                else persuasionCheck.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${persuasionCheck.sumEntries().toString()}",
+                        titleMessage = "Rolling Persuasion Check...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
+                }
+            }
+            Row {
+                Column (horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)){
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth(0.5f)
+                    ) {
+                        IconButton(
+                            enabled = isEditable,
+                            onClick = {
+                                religionProficiency = !religionProficiency
+                                characterSheet.religion.proficiency = religionProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${religionProficiency}"
+                                )
+                                initializer.refreshReligion()
+                                updateFunction()
+                                refreshContent()
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (religionProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) {
+                        }
+                        Text(
+                            text = "Religion:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(end = 34.dp)
+                        )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openReligionDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = if (religionCheck.sumEntries() > 0) "+" + religionCheck.sumEntries()
+                                    .toString()
+                                else religionCheck.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
+
+                    }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${religionCheck.sumEntries().toString()}",
+                        titleMessage = "Rolling Religion Check...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        IconButton(
+                            enabled = isEditable,
+                            onClick = {
+                                slightOfHandProficiency = !slightOfHandProficiency
+                                characterSheet.slightOfHand.proficiency = slightOfHandProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${slightOfHandProficiency}"
+                                )
+                                initializer.refreshSlightOfHand()
+                                updateFunction()
+                                refreshContent()
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (slightOfHandProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) {
+                        }
+                        Text(
+                            text = "Slight of Hand:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 13.sp,
+                            modifier = Modifier.padding(end = 20.dp)
+                        )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openSlightOfHandDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = if (slightOfHandCheck.sumEntries() > 0) "+" + slightOfHandCheck.sumEntries()
+                                    .toString()
+                                else slightOfHandCheck.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${slightOfHandCheck.sumEntries().toString()}",
+                        titleMessage = "Rolling Slight of Hand Check...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
+                }
+            }
+            Row {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth(0.5f)
+                    ) {
+                        IconButton(
+                            enabled = isEditable,
+                            onClick = {
+                                stealthProficiency = !stealthProficiency
+                                characterSheet.stealth.proficiency = stealthProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${stealthProficiency}"
+                                )
+                                initializer.refreshStealth()
+                                updateFunction()
+                                refreshContent()
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (stealthProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) {
+                        }
+                        Text(
+                            text = "Stealth:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(end = 42.dp)
+                        )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openStealthDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = if (stealthCheck.sumEntries() > 0) "+" + stealthCheck.sumEntries()
+                                    .toString()
+                                else stealthCheck.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${stealthCheck.sumEntries().toString()}",
+                        titleMessage = "Rolling Stealth Check...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.border(width = 1.dp, color = Color.LightGray)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        IconButton(
+                            enabled = isEditable,
+                            onClick = {
+                                survivalProficiency = !survivalProficiency
+                                characterSheet.survival.proficiency = survivalProficiency
+                                Log.d(
+                                    "debug",
+                                    "Should have toggled. Proficiency: ${survivalProficiency}"
+                                )
+                                initializer.refreshSurvival()
+                                updateFunction()
+                                refreshContent()
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 7.dp)
+                                .background(
+                                    color = if (survivalProficiency) Color.LightGray else Color.White,
+                                    shape = CircleShape
+                                )
+                                .border(width = 1.dp, color = Color.Black, shape = CircleShape)
+                                .size(size = 20.dp)
+                        ) {
+                        }
+                        Text(
+                            text = "Survival:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(end = 36.dp)
+                        )
+                        TextButton(
+                            enabled = isEditable,
+                            onClick = { openSurvivalDialog = true },
+                            contentPadding = PaddingValues(all = 0.dp),
+                            modifier = Modifier.offset(x = -10.dp),
+                            colors = ButtonDefaults.textButtonColors(backgroundColor = Color.LightGray)
+                        ) {
+                            Text(
+                                text = if (survivalCheck.sumEntries() > 0) "+" + survivalCheck.sumEntries()
+                                    .toString()
+                                else survivalCheck.sumEntries().toString(),
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${survivalCheck.sumEntries().toString()}",
+                        titleMessage = "Rolling Survival Check...",
+                        isEditable = isEditable,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
+                            .height(20.dp)
+                    )
                 }
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center,
                 modifier = Modifier
-                    .border(width = 1.dp, color = Color.LightGray)
                     .fillMaxWidth()
             ) {
                 Text(
@@ -4348,7 +4815,10 @@ fun OnlineStringWindow(
                         },
                         modifier = Modifier
                             .padding(horizontal = 20.dp, vertical = 5.dp)
-                            .background(color = Color.LightGray, shape = RoundedCornerShape(size = 5.dp))
+                            .background(
+                                color = Color.LightGray,
+                                shape = RoundedCornerShape(size = 5.dp)
+                            )
                             .padding(horizontal = 5.dp)
                     )
 
@@ -4421,7 +4891,9 @@ fun OnlineAttacksWindow(
     refresherFlag: Boolean = false,
     refreshContent: () -> Unit = {},
     updateFunction: () -> Unit = {},
-    isEditable: Boolean
+    isEditable: Boolean,
+    campaign: Campaign,
+    firebaseObject: FirebaseObject
 ) {
     Card(
         modifier = Modifier
@@ -4498,7 +4970,10 @@ fun OnlineAttacksWindow(
                         textStyle = TextStyle(textAlign = TextAlign.Center),
                         modifier = Modifier
                             .padding(start = 10.dp)
-                            .background(color = Color.LightGray, shape = RoundedCornerShape(size = 5.dp))
+                            .background(
+                                color = Color.LightGray,
+                                shape = RoundedCornerShape(size = 5.dp)
+                            )
                             .height(20.dp)
                     )
 
@@ -4506,7 +4981,10 @@ fun OnlineAttacksWindow(
                         enabled = isEditable,
                         contentPadding = PaddingValues(),
                         modifier = Modifier
-                            .background(color = Color.LightGray, shape = RoundedCornerShape(size = 5.dp))
+                            .background(
+                                color = Color.LightGray,
+                                shape = RoundedCornerShape(size = 5.dp)
+                            )
                             .height(20.dp)
                     ) {
                         Text(
@@ -4516,6 +4994,15 @@ fun OnlineAttacksWindow(
                             maxLines = 1
                         )
                     }
+
+                    RollStatButton(
+                        campaign = campaign,
+                        firebaseObject = firebaseObject,
+                        roll = ".roll 1d20 + ${attack.attackbonus.sumEntries().toString()}",
+                        titleMessage = "Rolling to attack with ${attack.name}",
+                        isEditable = isEditable,
+                        modifier = Modifier.height(20.dp)
+                    )
 
                     BasicTextField(
                         readOnly = !isEditable,
@@ -4529,7 +5016,10 @@ fun OnlineAttacksWindow(
                         textStyle = TextStyle(textAlign = TextAlign.Center),
                         modifier = Modifier
                             .padding(end = 10.dp)
-                            .background(color = Color.LightGray, shape = RoundedCornerShape(size = 5.dp))
+                            .background(
+                                color = Color.LightGray,
+                                shape = RoundedCornerShape(size = 5.dp)
+                            )
                             .height(20.dp)
 
                     )
@@ -4615,7 +5105,9 @@ fun OnlineSpellInfoWindow(
     refreshContent: () -> Unit = {},
     initializer: CharacterSheetInitializer = CharacterSheetInitializer(characterSheet),
     updateFunction: () -> Unit = {},
-    isEditable: Boolean
+    isEditable: Boolean,
+    campaign: Campaign,
+    firebaseObject: FirebaseObject
 ){
     Card (modifier = Modifier
         .fillMaxWidth()
@@ -4662,7 +5154,10 @@ fun OnlineSpellInfoWindow(
                 Text(
                     text = characterSheet.spellCastingClass.toString().lowercase().capitalize(),
                     modifier = Modifier
-                        .background(color = Color.LightGray, shape = RoundedCornerShape(size = 5.dp))
+                        .background(
+                            color = Color.LightGray,
+                            shape = RoundedCornerShape(size = 5.dp)
+                        )
                         .padding(horizontal = 5.dp, vertical = 2.dp)
                 )
 
@@ -4794,6 +5289,15 @@ fun OnlineSpellInfoWindow(
                         maxLines = 1
                     )
                 }
+
+                RollStatButton(
+                    campaign = campaign,
+                    firebaseObject = firebaseObject,
+                    roll = ".roll 1d20 + ${spellAttackBonusText.sumEntries()}",
+                    titleMessage = "Rolling for Spell Attack...",
+                    isEditable = isEditable,
+                    modifier = Modifier.padding(end = 5.dp).height(20.dp)
+                )
 
                 if(openSpellSaveDialog){
                     StatEntryPopup(
@@ -5027,5 +5531,23 @@ fun OnlineBasicAppearanceWindow(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun RollStatButton(
+    campaign: Campaign,
+    firebaseObject: FirebaseObject,
+    roll:String,
+    titleMessage:String,
+    isEditable: Boolean,
+    modifier: Modifier = Modifier
+){
+    IconButton(onClick = {
+        SendMessage(campaign = campaign, firebaseObject = firebaseObject, message = Message(userID = firebaseObject.currentUser!!.uid, text = titleMessage))
+        SendMessage(campaign = campaign, firebaseObject = firebaseObject, message = Message(userID = firebaseObject.currentUser!!.uid, text = roll))
+    },
+        enabled = isEditable, modifier = modifier) {
+        Icon(painter = painterResource(id = R.drawable.role_playing), contentDescription = "Roll", tint = Color.Black)
     }
 }
