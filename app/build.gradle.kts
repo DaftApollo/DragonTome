@@ -11,11 +11,11 @@ plugins {
 
 
 android {
-    namespace = "com.example.dragontome"
+    namespace = "com.moke.dragontome"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.dragontome"
+        applicationId = "com.moke.dragontome"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
