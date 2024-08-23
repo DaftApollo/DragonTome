@@ -1,7 +1,5 @@
 package com.moke.dragontome.data
 
-import kotlinx.coroutines.flow.Flow
-
 class OfflineSpellRepository(private val spellDao: SpellDao) : SpellsRepository {
     override suspend fun getAllSpellsStream(): List<Spell> = spellDao.getAllSpells()
 

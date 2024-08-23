@@ -1,7 +1,6 @@
 package com.moke.dragontome.state
 
 import androidx.lifecycle.ViewModel
-import com.moke.dragontome.data.Campaign
 import com.moke.dragontome.data.FirebaseObject
 import com.moke.dragontome.data.User
 import com.google.firebase.firestore.toObject

@@ -1,7 +1,5 @@
 package com.moke.dragontome.data
 
-import kotlinx.coroutines.flow.Flow
-
 
 //Repository that provides insert, update, delete, and retrieval of [Spell] from a given data source
 interface SpellsRepository {

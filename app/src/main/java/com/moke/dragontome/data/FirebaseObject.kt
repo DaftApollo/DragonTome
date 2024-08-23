@@ -1,12 +1,10 @@
 package com.moke.dragontome.data
 
-import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.firestore
-import com.google.firebase.firestore.getField
 import com.google.firebase.firestore.toObject
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.streams.asSequence

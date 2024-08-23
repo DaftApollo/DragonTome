@@ -1,6 +1,5 @@
 package com.moke.dragontome.data
 
-import java.math.MathContext
 import java.math.RoundingMode
 
 class CharacterSheetInitializer (var characterSheet: CharacterSheet) {
