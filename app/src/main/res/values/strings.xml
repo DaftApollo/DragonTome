@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">DragonTome</string>
-    <string name="campaigns">Campaigns</string>
     <string name="characters">Characters</string>
     <string name="spells">Spells</string>
     <string name="expand">Expand</string>
+    <string name="notes">Notes</string>
 </resources>

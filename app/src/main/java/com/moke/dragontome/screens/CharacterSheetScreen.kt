@@ -1,5 +1,6 @@
 package com.moke.dragontome.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -988,7 +989,7 @@ fun ClassPopupWindow(
       Card (
          modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
+            .sizeIn(minHeight = 150.dp, maxHeight = 400.dp)
             .padding(16.dp)
             .verticalScroll(state = rememberScrollState()),
          shape = RoundedCornerShape(16.dp)
@@ -1208,8 +1209,8 @@ fun BasicInfoWindow(
                         color = Color.LightGray,
                         shape = RoundedCornerShape(size = 5.dp)
                      )
-                     .padding(horizontal = 3.dp)
-                     .sizeIn(maxWidth = 100.dp)
+                     .padding(start = 3.dp, end = 5.dp)
+                     .sizeIn(maxWidth =90.dp)
                )
                Text(
                   text = "Race: ",
@@ -1339,7 +1340,8 @@ fun PrimaryStats(
                   text = "Proficiency Bonus:",
                   minLines = 2,
                   textAlign = TextAlign.Center,
-                  color = Color.Black
+                  color = Color.Black,
+                  fontSize = 13.sp
                )
                Text(
                   text = characterSheet.proficiencyBonus.sumEntries().toString(),
@@ -2230,7 +2232,8 @@ fun AttributesWindow(
       Dialog(onDismissRequest = onDismissRequest) {
          Card (modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
+            .sizeIn(minHeight = 200.dp, maxHeight = 500.dp)
+            //.height(250.dp)
             .padding(16.dp)
             .verticalScroll(state = rememberScrollState()),
             shape = RoundedCornerShape(16.dp)
@@ -2247,6 +2250,10 @@ fun AttributesWindow(
                Text(text = statName,
                   textAlign = TextAlign.Center,
                   modifier = Modifier.padding(all = 10.dp))
+               Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 50.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                  Text(text = "Bonus:")
+                  Text(text = "Source:")
+               }
                Divider(thickness = 1.dp, modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp))
                //Display the base stat entry
                if(statList.usesBaseStat){
@@ -2328,9 +2335,10 @@ fun AttributesWindow(
                         value = statValue.toString(),
                         onValueChange = {
                            try {
-                              statValue = it.toInt()
+                              statValue = it.replace('.','-').toInt()
                            }
                            catch (e:NumberFormatException) {
+                              Log.d("debug", e.toString())
                               statValue = 0
                            }
                            statList.statList[statList.statList.indexOf(statEntry)].stat = statValue
@@ -5082,12 +5090,12 @@ fun BasicAppearanceWindow(
                   },
                   singleLine = true,
                   modifier = modifier
-                      .background(
-                          color = Color.LightGray,
-                          shape = RoundedCornerShape(size = 5.dp)
-                      )
-                      .padding(horizontal = 3.dp)
-                      .sizeIn(maxWidth = 100.dp)
+                     .background(
+                        color = Color.LightGray,
+                        shape = RoundedCornerShape(size = 5.dp)
+                     )
+                     .padding(horizontal = 3.dp)
+                     .sizeIn(maxWidth = 100.dp)
                )
             }
          }
@@ -5106,7 +5114,7 @@ fun SpellBookWindow(
    Column (
       modifier = Modifier
          .padding(horizontal = 10.dp)
-          .fillMaxWidth()
+         .fillMaxWidth()
 
 
 
@@ -5274,7 +5282,8 @@ fun SpellCantripWindow(
    title: String = "",
    updateFunction: () -> Unit = {},
    appViewModel: AppViewModel){
-   Card(modifier = Modifier.fillMaxWidth()
+   Card(modifier = Modifier
+      .fillMaxWidth()
       .heightIn(min = 0.dp, max = 500.dp)
       .background(
          color = primaryContainerLight,
@@ -5291,7 +5300,8 @@ fun SpellCantripWindow(
          Text(
             text = title,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+               .fillMaxWidth()
                .padding(vertical = 5.dp)
          )
          Divider(modifier = Modifier.padding(horizontal = 10.dp), color = Color.Black)
@@ -5319,7 +5329,8 @@ fun SpellLevelWindow(
    updateFunction: () -> Unit = {},
    appViewModel: AppViewModel
 ){
-   Card(modifier = Modifier.fillMaxWidth()
+   Card(modifier = Modifier
+      .fillMaxWidth()
       .heightIn(min = 0.dp, max = 500.dp)
       .background(
          color = primaryContainerLight,
@@ -5336,7 +5347,8 @@ fun SpellLevelWindow(
          Text(
             text = title,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+               .fillMaxWidth()
                .padding(vertical = 5.dp)
             )
          Divider(modifier = Modifier.padding(horizontal = 10.dp), color = Color.Black)

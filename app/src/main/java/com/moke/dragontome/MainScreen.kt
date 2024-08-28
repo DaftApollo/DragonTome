@@ -43,7 +43,7 @@ import com.moke.dragontome.ui.theme.primaryContainerLight
 import com.moke.dragontome.ui.theme.primaryLight
 
 enum class DragonTomeLocalScreens() {
-    Campaigns,
+    Notes,
     Characters,
     Spells,
     Credits
@@ -63,12 +63,12 @@ fun LocalNavBar(
         //TODO: Add proper icons for navigation
             BottomNavigationItem(
                 icon = { Icon(imageVector = Icons.Rounded.Menu, contentDescription = null)},
-                label = { Text(text = stringResource(R.string.campaigns))},
+                label = { Text(text = stringResource(R.string.notes))},
                 selected = selectedItem == 1,
                 onClick = {
                     selectedItem = 1
                     //Navigate to the Campaigns Screen on click
-                    navController.navigate(DragonTomeLocalScreens.Campaigns.name)
+                    navController.navigate(DragonTomeLocalScreens.Notes.name)
                 }
             )
             BottomNavigationItem(
@@ -111,8 +111,7 @@ fun DragonTomeApp(
         Column {
             LocalNavBar(navController = navController)
             AdvertView()
-        }
-                         }, topBar = {
+        } }, topBar = {
         Row(modifier = Modifier
             .fillMaxWidth()
             .background(color = primaryLight),
@@ -130,12 +129,10 @@ fun DragonTomeApp(
 
         NavHost(
             navController = navController,
-            startDestination = DragonTomeLocalScreens.Campaigns.name,
+            startDestination = DragonTomeLocalScreens.Characters.name,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(route = DragonTomeLocalScreens.Campaigns.name) {
-                CampaignScreen(appViewModel, context = context)
-            }
+
 
             composable(route = DragonTomeLocalScreens.Characters.name) {
                 CharacterScreen(appViewModel)
@@ -143,6 +140,9 @@ fun DragonTomeApp(
 
             composable(route = DragonTomeLocalScreens.Spells.name) {
                 SpellsScreen(context = context, appViewModel)
+            }
+            composable(route = DragonTomeLocalScreens.Notes.name) {
+                //NotesScreen()
             }
             composable(route = DragonTomeLocalScreens.Credits.name){
                 CreditsScreen()
