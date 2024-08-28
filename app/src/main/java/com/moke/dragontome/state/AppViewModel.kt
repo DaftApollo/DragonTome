@@ -13,6 +13,7 @@ import com.moke.dragontome.data.SheetDatabase
 import com.moke.dragontome.data.Spell
 import com.moke.dragontome.data.SpellDao
 import com.moke.dragontome.data.SpellDatabase
+import com.moke.dragontome.data.SpellFilterObject
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
@@ -24,6 +25,8 @@ class AppViewModel(context: Context) : ViewModel() {
     private val spellDB = SpellDatabase.getDatabase(context = context)
     val spellDao = spellDB.spellDao()
     var spellList: List<Spell> = emptyList()
+    var filteredSpellList:List<Spell> = emptyList()
+    var spellFilterObject = SpellFilterObject
 
     private val sheetDB = SheetDatabase.getDatabase(context = context)
     val sheetDao = sheetDB.sheetDao()
@@ -59,7 +62,7 @@ class AppViewModel(context: Context) : ViewModel() {
 
     fun addSpell(additionMode: Boolean, spell: Spell, characterSheet: CharacterSheet? =  if (currentCharacter != null) currentCharacter!!.characterSheet else null){
         if(characterSheet != null && additionMode == true){
-            if (spell.level.equals("Cantrip")) {
+            if (spell.level.equals("0")) {
                 characterSheet.spellBook.cantrips = characterSheet.spellBook.cantrips.plus(spell)
             } else if (spell.level.equals("1")) {
                 characterSheet.spellBook.levelOneSpells = characterSheet.spellBook.levelOneSpells.plus(spell)
@@ -84,7 +87,7 @@ class AppViewModel(context: Context) : ViewModel() {
         }
         else if(characterSheet != null && additionMode != true){
 
-            if (spell.level.equals("Cantrip")) {
+            if (spell.level.equals("0")) {
                 characterSheet.spellBook.cantrips = characterSheet.spellBook.cantrips.minus(spell)
             } else if (spell.level.equals("1")) {
                 characterSheet.spellBook.levelOneSpells = characterSheet.spellBook.levelOneSpells.minus(spell)
