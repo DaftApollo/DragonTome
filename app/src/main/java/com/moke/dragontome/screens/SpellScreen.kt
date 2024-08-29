@@ -4,8 +4,10 @@ import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +16,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -27,6 +32,7 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.sharp.Menu
+import androidx.compose.material.icons.sharp.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -37,6 +43,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -85,10 +92,13 @@ Box(modifier = Modifier.fillMaxSize()) {
         var openFilterMenu by remember {
             mutableStateOf(false)
         }
-        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp), horizontalArrangement = Arrangement.End) {
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 5.dp), horizontalArrangement = Arrangement.End) {
             
             IconButton(onClick = {openFilterMenu = true  },
-                modifier = Modifier.background(color = primaryContainerLight, shape = RoundedCornerShape(8.dp))
+                modifier = Modifier
+                    .background(color = primaryContainerLight, shape = RoundedCornerShape(8.dp))
                     .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(8.dp))
             ) {
                 Icon(imageVector = Icons.Sharp.Menu, contentDescription = "Filter")
@@ -120,29 +130,83 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
             colors = CardDefaults.cardColors(containerColor = primaryContainerLight)
         ) {
             Column {
-                Text(text = "Spell Filter", fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 10.dp, top = 5.dp))
+                var cantripSelected by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.cantripSelected)
+                }
+                var oneSelected by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.oneSelected)
+                }
+                var twoSelected by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.twoSelected)
+                }
+                var threeSelected by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.threeSelected)
+                }
+                var fourSelected by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.fourSelected)
+                }
+                var fiveSelected by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.fiveSelected)
+                }
+                var sixSelected by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.sixSelected)
+                }
+                var sevenSelected by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.sevenSelected)
+                }
+                var eightSelected by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.eightSelected)
+                }
+                var nineSelected by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.nineSelected)
+                }
+
+                Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp)) {
+                    Text(
+                        text = "Spell Filter",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(top = 5.dp)
+                    )
+                    IconButton(
+                        onClick = {
+                            cantripSelected = false
+                            oneSelected = false
+                            twoSelected = false
+                            threeSelected = false
+                            fourSelected = false
+                            fiveSelected = false
+                            sixSelected = false
+                            sevenSelected = false
+                            eightSelected = false
+                            nineSelected = false
+                            appViewModel.spellFilterObject.clearFilter()
+                            appViewModel.filteredSpellList = emptyList()
+                                  },
+                        modifier = Modifier
+                    ) {
+                        Icon(imageVector = Icons.Sharp.Refresh, contentDescription = "", modifier = Modifier)
+
+                    }
+                }
                 Divider(thickness = 1.dp, modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp), color = Color.Black)
                 Text(text = "Spell Level:", modifier = Modifier.padding(horizontal = 20.dp))
                 Divider(thickness = 1.dp, modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp), color = Color.LightGray)
 
                 Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                        var cantripSelected by remember {
-                            mutableStateOf(appViewModel.spellFilterObject.cantripSelected)
-                        }
-                        var oneSelected by remember {
-                            mutableStateOf(appViewModel.spellFilterObject.oneSelected)
-                        }
-                        var twoSelected by remember {
-                            mutableStateOf(appViewModel.spellFilterObject.twoSelected)
-                        }
+                    Row(modifier = Modifier
+                        .fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+
 
                         FilterChip(selected = cantripSelected, onClick = {
                             cantripSelected = !cantripSelected
                             appViewModel.spellFilterObject.cantripSelected = cantripSelected
                             if (cantripSelected){
                                 Log.d("debug", "Filtered list before union: ${appViewModel.filteredSpellList}.")
-                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("0") }).toList()
+                                //appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("0") }).toList()
+                                appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
                                 appViewModel.filteredSpellList = appViewModel.filteredSpellList.sortedBy { it.level }
                                 Log.d("debug", "Filtered list after union: ${appViewModel.filteredSpellList}.")
                                 Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
@@ -169,7 +233,8 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
                             appViewModel.spellFilterObject.oneSelected = oneSelected
                             if (oneSelected){
                                 Log.d("debug", "Filtered list before union: ${appViewModel.filteredSpellList}.")
-                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("1") }).toList()
+                                //appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("1") }).toList()
+                                appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
                                 appViewModel.filteredSpellList = appViewModel.filteredSpellList.sortedBy { it.level }
                                 Log.d("debug", "Filtered list after union: ${appViewModel.filteredSpellList}.")
                                 Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
@@ -196,7 +261,8 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
                             appViewModel.spellFilterObject.twoSelected = twoSelected
                             if (twoSelected){
                                 Log.d("debug", "Filtered list before union: ${appViewModel.filteredSpellList}.")
-                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("2") }).toList()
+                                //appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("2") }).toList()
+                                appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
                                 appViewModel.filteredSpellList = appViewModel.filteredSpellList.sortedBy { it.level }
                                 Log.d("debug", "Filtered list after union: ${appViewModel.filteredSpellList}.")
                                 Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
@@ -219,19 +285,8 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
                         )
 
                     }
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                        var threeSelected by remember {
-                            mutableStateOf(appViewModel.spellFilterObject.threeSelected)
-                        }
-                        var fourSelected by remember {
-                            mutableStateOf(appViewModel.spellFilterObject.fourSelected)
-                        }
-                        var fiveSelected by remember {
-                            mutableStateOf(appViewModel.spellFilterObject.fiveSelected)
-                        }
-                        var sixSelected by remember {
-                            mutableStateOf(appViewModel.spellFilterObject.sixSelected)
-                        }
+                    Row(modifier = Modifier.fillMaxWidth().horizontalScroll(state = rememberScrollState()), horizontalArrangement = Arrangement.Center) {
+
 
 
                         FilterChip(selected = threeSelected, onClick = {
@@ -239,7 +294,8 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
                             appViewModel.spellFilterObject.threeSelected = threeSelected
                             if (threeSelected){
                                 Log.d("debug", "Filtered list before union: ${appViewModel.filteredSpellList}.")
-                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("3") }).toList()
+                                //appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("3") }).toList()
+                                appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
                                 appViewModel.filteredSpellList = appViewModel.filteredSpellList.sortedBy { it.level }
                                 Log.d("debug", "Filtered list after union: ${appViewModel.filteredSpellList}.")
                                 Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
@@ -266,7 +322,8 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
                             appViewModel.spellFilterObject.fourSelected = fourSelected
                             if (fourSelected){
                                 Log.d("debug", "Filtered list before union: ${appViewModel.filteredSpellList}.")
-                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("4") }).toList()
+                                //appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("4") }).toList()
+                                appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
                                 appViewModel.filteredSpellList = appViewModel.filteredSpellList.sortedBy { it.level }
                                 Log.d("debug", "Filtered list after union: ${appViewModel.filteredSpellList}.")
                                 Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
@@ -293,7 +350,8 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
                             appViewModel.spellFilterObject.fiveSelected = fiveSelected
                             if (fiveSelected){
                                 Log.d("debug", "Filtered list before union: ${appViewModel.filteredSpellList}.")
-                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("5") }).toList()
+                                //appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("5") }).toList()
+                                appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
                                 appViewModel.filteredSpellList = appViewModel.filteredSpellList.sortedBy { it.level }
                                 Log.d("debug", "Filtered list after union: ${appViewModel.filteredSpellList}.")
                                 Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
@@ -320,7 +378,8 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
                             appViewModel.spellFilterObject.sixSelected = sixSelected
                             if (sixSelected){
                                 Log.d("debug", "Filtered list before union: ${appViewModel.filteredSpellList}.")
-                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("6") }).toList()
+                                //appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("6") }).toList()
+                                appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
                                 appViewModel.filteredSpellList = appViewModel.filteredSpellList.sortedBy { it.level }
                                 Log.d("debug", "Filtered list after union: ${appViewModel.filteredSpellList}.")
                                 Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
@@ -344,22 +403,15 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
 
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                        var sevenSelected by remember {
-                            mutableStateOf(appViewModel.spellFilterObject.sevenSelected)
-                        }
-                        var eightSelected by remember {
-                            mutableStateOf(appViewModel.spellFilterObject.eightSelected)
-                        }
-                        var nineSelected by remember {
-                            mutableStateOf(appViewModel.spellFilterObject.nineSelected)
-                        }
+
 
                         FilterChip(selected = sevenSelected, onClick = {
                             sevenSelected = !sevenSelected
                             appViewModel.spellFilterObject.sevenSelected = sevenSelected
                             if (sevenSelected){
                                 Log.d("debug", "Filtered list before union: ${appViewModel.filteredSpellList}.")
-                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("7") }).toList()
+                                //appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("7") }).toList()
+                                appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
                                 appViewModel.filteredSpellList = appViewModel.filteredSpellList.sortedBy { it.level }
                                 Log.d("debug", "Filtered list after union: ${appViewModel.filteredSpellList}.")
                                 Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
@@ -386,7 +438,8 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
                             appViewModel.spellFilterObject.eightSelected = eightSelected
                             if (eightSelected){
                                 Log.d("debug", "Filtered list before union: ${appViewModel.filteredSpellList}.")
-                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("8") }).toList()
+                                //appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("8") }).toList()
+                                appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
                                 appViewModel.filteredSpellList = appViewModel.filteredSpellList.sortedBy { it.level }
                                 Log.d("debug", "Filtered list after union: ${appViewModel.filteredSpellList}.")
                                 Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
@@ -413,7 +466,8 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
                             appViewModel.spellFilterObject.nineSelected = nineSelected
                             if (nineSelected){
                                 Log.d("debug", "Filtered list before union: ${appViewModel.filteredSpellList}.")
-                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("9") }).toList()
+                                //appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("9") }).toList()
+                                appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
                                 appViewModel.filteredSpellList = appViewModel.filteredSpellList.sortedBy { it.level }
                                 Log.d("debug", "Filtered list after union: ${appViewModel.filteredSpellList}.")
                                 Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
