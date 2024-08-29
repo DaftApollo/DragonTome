@@ -44,6 +44,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -124,6 +126,7 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
+                .height(400.dp)
                 .verticalScroll(state = rememberScrollState()),
             shape = RoundedCornerShape(16.dp),
             border = BorderStroke(width = 1.dp, color = Color.Black),
@@ -161,6 +164,39 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
                     mutableStateOf(appViewModel.spellFilterObject.nineSelected)
                 }
 
+                var abjurationSelected by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.abjurationSelected)
+                }
+                var conjurationSelected by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.conjurationSelected)
+                }
+                var divinationSelected by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.divinationSelected)
+                }
+                var enchantmentSelected by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.enchantmentSelected)
+                }
+                var evocationSelected by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.evocationSelected)
+                }
+                var illusionSelected by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.illusionSelected)
+                }
+                var necromancySelected by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.necromancySelected)
+                }
+                var transmutationSelected by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.transmutationSelected)
+                }
+
+                var titleSearch by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.titleSearch)
+                }
+                var descriptionSearch by remember {
+                    mutableStateOf(appViewModel.spellFilterObject.descriptionSearch)
+                }
+
+
                 Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 10.dp)) {
@@ -182,6 +218,19 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
                             sevenSelected = false
                             eightSelected = false
                             nineSelected = false
+
+                            abjurationSelected = false
+                            conjurationSelected = false
+                            divinationSelected = false
+                            enchantmentSelected = false
+                            evocationSelected = false
+                            illusionSelected = false
+                            necromancySelected = false
+                            transmutationSelected = false
+
+                            titleSearch = ""
+                            descriptionSearch = ""
+
                             appViewModel.spellFilterObject.clearFilter()
                             appViewModel.filteredSpellList = emptyList()
                                   },
@@ -196,8 +245,7 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
                 Divider(thickness = 1.dp, modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp), color = Color.LightGray)
 
                 Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                    Row(modifier = Modifier
-                        .fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
 
 
                         FilterChip(selected = cantripSelected, onClick = {
@@ -275,7 +323,7 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
                             Text(text = "2nd")
                         },
                             leadingIcon = {
-                                if (oneSelected){
+                                if (twoSelected){
                                     Icon(imageVector = Icons.Filled.Done, contentDescription = "Selected")
                                 } else {
                                     null
@@ -285,7 +333,9 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
                         )
 
                     }
-                    Row(modifier = Modifier.fillMaxWidth().horizontalScroll(state = rememberScrollState()), horizontalArrangement = Arrangement.Center) {
+                    Row(modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(state = rememberScrollState()), horizontalArrangement = Arrangement.Center) {
 
 
 
@@ -489,6 +539,272 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
                             colors = FilterChipDefaults.filterChipColors(selectedContainerColor = primaryLight)
                         )
                     }
+
+                    Spacer(modifier = Modifier.padding(vertical = 10.dp))
+                    Text(text = "Spell School:", modifier = Modifier.padding(horizontal = 20.dp).align(alignment = Alignment.Start))
+                    Divider(thickness = 1.dp, modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp), color = Color.LightGray)
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+
+                        FilterChip(selected = abjurationSelected, modifier = Modifier.padding(end = 5.dp), onClick = {
+                            abjurationSelected = !abjurationSelected
+                            appViewModel.spellFilterObject.abjurationSelected = abjurationSelected
+                            if (abjurationSelected){
+                                Log.d("debug", "Filtered list before union: ${appViewModel.filteredSpellList}.")
+                                //appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("0") }).toList()
+                                appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
+                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.sortedBy { it.level }
+                                Log.d("debug", "Filtered list after union: ${appViewModel.filteredSpellList}.")
+                                Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
+                            } else{
+                                Log.d("debug", "Filtered list before subtract: ${appViewModel.filteredSpellList}.")
+                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.subtract(appViewModel.spellList.filter { it.level.equals("0") }).toList()
+                                Log.d("debug", "Filtered list after subtract: ${appViewModel.filteredSpellList}.")
+                                Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
+                            } }, label = {
+                            Text(text = "Abjuration")
+                        },
+                            leadingIcon = {
+                                if (abjurationSelected){
+                                    Icon(imageVector = Icons.Filled.Done, contentDescription = "Selected")
+                                } else {
+                                    null
+                                }
+                            },
+                            colors = FilterChipDefaults.filterChipColors(selectedContainerColor = primaryLight)
+                        )
+
+                        FilterChip(selected = conjurationSelected, modifier = Modifier.padding(start = 5.dp), onClick = {
+                            conjurationSelected = !conjurationSelected
+                            appViewModel.spellFilterObject.conjurationSelected = conjurationSelected
+                            if (conjurationSelected){
+                                Log.d("debug", "Filtered list before union: ${appViewModel.filteredSpellList}.")
+                                //appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("0") }).toList()
+                                appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
+                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.sortedBy { it.level }
+                                Log.d("debug", "Filtered list after union: ${appViewModel.filteredSpellList}.")
+                                Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
+                            } else{
+                                Log.d("debug", "Filtered list before subtract: ${appViewModel.filteredSpellList}.")
+                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.subtract(appViewModel.spellList.filter { it.level.equals("0") }).toList()
+                                Log.d("debug", "Filtered list after subtract: ${appViewModel.filteredSpellList}.")
+                                Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
+                            } }, label = {
+                            Text(text = "Conjuration")
+                        },
+                            leadingIcon = {
+                                if (conjurationSelected){
+                                    Icon(imageVector = Icons.Filled.Done, contentDescription = "Selected")
+                                } else {
+                                    null
+                                }
+                            },
+                            colors = FilterChipDefaults.filterChipColors(selectedContainerColor = primaryLight)
+                        )
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+
+
+                        FilterChip(selected = divinationSelected, modifier = Modifier.padding(end = 5.dp), onClick = {
+                            divinationSelected = !divinationSelected
+                            appViewModel.spellFilterObject.divinationSelected = divinationSelected
+                            if (divinationSelected){
+                                Log.d("debug", "Filtered list before union: ${appViewModel.filteredSpellList}.")
+                                //appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("0") }).toList()
+                                appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
+                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.sortedBy { it.level }
+                                Log.d("debug", "Filtered list after union: ${appViewModel.filteredSpellList}.")
+                                Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
+                            } else{
+                                Log.d("debug", "Filtered list before subtract: ${appViewModel.filteredSpellList}.")
+                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.subtract(appViewModel.spellList.filter { it.level.equals("0") }).toList()
+                                Log.d("debug", "Filtered list after subtract: ${appViewModel.filteredSpellList}.")
+                                Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
+                            } }, label = {
+                            Text(text = "Divination")
+                        },
+                            leadingIcon = {
+                                if (divinationSelected){
+                                    Icon(imageVector = Icons.Filled.Done, contentDescription = "Selected")
+                                } else {
+                                    null
+                                }
+                            },
+                            colors = FilterChipDefaults.filterChipColors(selectedContainerColor = primaryLight)
+                        )
+
+                        FilterChip(selected = enchantmentSelected, modifier = Modifier.padding(start = 5.dp), onClick = {
+                            enchantmentSelected = !enchantmentSelected
+                            appViewModel.spellFilterObject.enchantmentSelected = enchantmentSelected
+                            if (enchantmentSelected){
+                                Log.d("debug", "Filtered list before union: ${appViewModel.filteredSpellList}.")
+                                //appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("0") }).toList()
+                                appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
+                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.sortedBy { it.level }
+                                Log.d("debug", "Filtered list after union: ${appViewModel.filteredSpellList}.")
+                                Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
+                            } else{
+                                Log.d("debug", "Filtered list before subtract: ${appViewModel.filteredSpellList}.")
+                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.subtract(appViewModel.spellList.filter { it.level.equals("0") }).toList()
+                                Log.d("debug", "Filtered list after subtract: ${appViewModel.filteredSpellList}.")
+                                Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
+                            } }, label = {
+                            Text(text = "Enchantment")
+                        },
+                            leadingIcon = {
+                                if (enchantmentSelected){
+                                    Icon(imageVector = Icons.Filled.Done, contentDescription = "Selected")
+                                } else {
+                                    null
+                                }
+                            },
+                            colors = FilterChipDefaults.filterChipColors(selectedContainerColor = primaryLight)
+                        )
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+
+
+                        FilterChip(selected = evocationSelected, modifier = Modifier.padding(end = 5.dp), onClick = {
+                            evocationSelected = !evocationSelected
+                            appViewModel.spellFilterObject.evocationSelected = evocationSelected
+                            if (evocationSelected){
+                                Log.d("debug", "Filtered list before union: ${appViewModel.filteredSpellList}.")
+                                //appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("0") }).toList()
+                                appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
+                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.sortedBy { it.level }
+                                Log.d("debug", "Filtered list after union: ${appViewModel.filteredSpellList}.")
+                                Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
+                            } else{
+                                Log.d("debug", "Filtered list before subtract: ${appViewModel.filteredSpellList}.")
+                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.subtract(appViewModel.spellList.filter { it.level.equals("0") }).toList()
+                                Log.d("debug", "Filtered list after subtract: ${appViewModel.filteredSpellList}.")
+                                Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
+                            } }, label = {
+                            Text(text = "Evocation")
+                        },
+                            leadingIcon = {
+                                if (evocationSelected){
+                                    Icon(imageVector = Icons.Filled.Done, contentDescription = "Selected")
+                                } else {
+                                    null
+                                }
+                            },
+                            colors = FilterChipDefaults.filterChipColors(selectedContainerColor = primaryLight)
+                        )
+
+                        FilterChip(selected = illusionSelected, modifier = Modifier.padding(start = 5.dp), onClick = {
+                            illusionSelected = !illusionSelected
+                            appViewModel.spellFilterObject.illusionSelected = illusionSelected
+                            if (illusionSelected){
+                                Log.d("debug", "Filtered list before union: ${appViewModel.filteredSpellList}.")
+                                //appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("0") }).toList()
+                                appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
+                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.sortedBy { it.level }
+                                Log.d("debug", "Filtered list after union: ${appViewModel.filteredSpellList}.")
+                                Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
+                            } else{
+                                Log.d("debug", "Filtered list before subtract: ${appViewModel.filteredSpellList}.")
+                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.subtract(appViewModel.spellList.filter { it.level.equals("0") }).toList()
+                                Log.d("debug", "Filtered list after subtract: ${appViewModel.filteredSpellList}.")
+                                Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
+                            } }, label = {
+                            Text(text = "Illusion")
+                        },
+                            leadingIcon = {
+                                if (illusionSelected){
+                                    Icon(imageVector = Icons.Filled.Done, contentDescription = "Selected")
+                                } else {
+                                    null
+                                }
+                            },
+                            colors = FilterChipDefaults.filterChipColors(selectedContainerColor = primaryLight)
+                        )
+                    }
+                    Row(modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(state = rememberScrollState()), horizontalArrangement = Arrangement.Center) {
+
+
+                        FilterChip(selected = necromancySelected, modifier = Modifier.padding(end = 5.dp), onClick = {
+                            necromancySelected = !necromancySelected
+                            appViewModel.spellFilterObject.necromancySelected = necromancySelected
+                            if (necromancySelected){
+                                Log.d("debug", "Filtered list before union: ${appViewModel.filteredSpellList}.")
+                                //appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("0") }).toList()
+                                appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
+                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.sortedBy { it.level }
+                                Log.d("debug", "Filtered list after union: ${appViewModel.filteredSpellList}.")
+                                Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
+                            } else{
+                                Log.d("debug", "Filtered list before subtract: ${appViewModel.filteredSpellList}.")
+                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.subtract(appViewModel.spellList.filter { it.level.equals("0") }).toList()
+                                Log.d("debug", "Filtered list after subtract: ${appViewModel.filteredSpellList}.")
+                                Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
+                            } }, label = {
+                            Text(text = "Necromancy")
+                        },
+                            leadingIcon = {
+                                if (necromancySelected){
+                                    Icon(imageVector = Icons.Filled.Done, contentDescription = "Selected")
+                                } else {
+                                    null
+                                }
+                            },
+                            colors = FilterChipDefaults.filterChipColors(selectedContainerColor = primaryLight)
+                        )
+
+                        FilterChip(selected = transmutationSelected, modifier = Modifier.padding(start = 5.dp), onClick = {
+                            transmutationSelected = !transmutationSelected
+                            appViewModel.spellFilterObject.transmutationSelected = transmutationSelected
+                            if (transmutationSelected){
+                                Log.d("debug", "Filtered list before union: ${appViewModel.filteredSpellList}.")
+                                //appViewModel.filteredSpellList = appViewModel.filteredSpellList.union(appViewModel.spellList.filter { it.level.equals("0") }).toList()
+                                appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
+                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.sortedBy { it.level }
+                                Log.d("debug", "Filtered list after union: ${appViewModel.filteredSpellList}.")
+                                Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
+                            } else{
+                                Log.d("debug", "Filtered list before subtract: ${appViewModel.filteredSpellList}.")
+                                appViewModel.filteredSpellList = appViewModel.filteredSpellList.subtract(appViewModel.spellList.filter { it.level.equals("0") }).toList()
+                                Log.d("debug", "Filtered list after subtract: ${appViewModel.filteredSpellList}.")
+                                Log.d("debug", "Count: ${appViewModel.filteredSpellList.count()}")
+                            } }, label = {
+                            Text(text = "Transmutation")
+                        },
+                            leadingIcon = {
+                                if (transmutationSelected){
+                                    Icon(imageVector = Icons.Filled.Done, contentDescription = "Selected")
+                                } else {
+                                    null
+                                }
+                            },
+                            colors = FilterChipDefaults.filterChipColors(selectedContainerColor = primaryLight)
+                        )
+                    }
+                    Spacer(modifier = Modifier.padding(vertical = 10.dp))
+                    Text(text = "Spell Name:", modifier = Modifier.padding(horizontal = 20.dp).align(alignment = Alignment.Start))
+                    Divider(thickness = 1.dp, modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp), color = Color.LightGray)
+                    TextField(value = titleSearch, onValueChange = {
+                        titleSearch = it
+                        appViewModel.spellFilterObject.titleSearch = titleSearch
+                        appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
+                    },
+                        colors = TextFieldDefaults.colors(focusedContainerColor = Color.LightGray, unfocusedContainerColor = primaryContainerLight,
+                          unfocusedPlaceholderColor = Color.LightGray),
+                        placeholder = { Text(text = "Fireball", fontStyle = FontStyle.Italic)}
+                    )
+
+                    Spacer(modifier = Modifier.padding(vertical = 10.dp))
+                    Text(text = "Spell Description:", modifier = Modifier.padding(horizontal = 20.dp).align(alignment = Alignment.Start))
+                    Divider(thickness = 1.dp, modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp), color = Color.LightGray)
+                    TextField(value = descriptionSearch, onValueChange = {
+                        descriptionSearch = it
+                        appViewModel.spellFilterObject.descriptionSearch = descriptionSearch
+                        appViewModel.filteredSpellList = appViewModel.spellList.filter { appViewModel.spellFilterObject.getFilterPredicate(it) }
+                    },
+                        colors = TextFieldDefaults.colors(focusedContainerColor = Color.LightGray, unfocusedContainerColor = primaryContainerLight,
+                            unfocusedPlaceholderColor = Color.LightGray),
+                        placeholder = { Text(text = "fire damage", fontStyle = FontStyle.Italic)}
+                    )
                 }
             }
         }
@@ -513,8 +829,8 @@ fun SpellCard(
         colors = CardDefaults.cardColors(containerColor = primaryContainerLight)
         //TODO: Add animation to the card expanding. Weird lag or not working at all last time.
     ) {
-        Row {
-            Column {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.fillMaxWidth(0.85f)) {
                 Text(
                     text = spell.name,
                     modifier.padding(horizontal = 10.dp),

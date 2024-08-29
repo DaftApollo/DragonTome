@@ -24,6 +24,9 @@ object SpellFilterObject {
     var necromancySelected = false
     var transmutationSelected = false
 
+    var titleSearch:String = ""
+    var descriptionSearch: String = ""
+
     fun clearFilter(){
         cantripSelected = false
         oneSelected = false
@@ -44,6 +47,9 @@ object SpellFilterObject {
         illusionSelected = false
         necromancySelected = false
         transmutationSelected = false
+
+        titleSearch = ""
+        descriptionSearch = ""
     }
 
     fun isLevelFiltering():Boolean{
@@ -104,7 +110,9 @@ object SpellFilterObject {
 
         val levelPredicate = if (isLevelFiltering()) Predicate<Spell> {filteredLevels.contains(it.level)} else Predicate<Spell> { true }
         val schoolPredicate = if(isSchoolFiltering()) Predicate<Spell> { filteredSchools.contains(it.school) } else Predicate<Spell> { true }
-        return levelPredicate.and(schoolPredicate).test(spell)
+        val titlePredicate = Predicate<Spell> { it.name.contains(titleSearch, ignoreCase = true) }
+        val descriptionPredicate = Predicate<Spell> { it.text.contains(descriptionSearch, ignoreCase = true) }
+        return levelPredicate.and(schoolPredicate).and(titlePredicate).and(descriptionPredicate).test(spell)
     }
 
 }
