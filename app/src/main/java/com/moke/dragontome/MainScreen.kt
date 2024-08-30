@@ -37,6 +37,7 @@ import com.moke.dragontome.data.AdvertView
 import com.moke.dragontome.screens.CampaignScreen
 import com.moke.dragontome.screens.CharacterScreen
 import com.moke.dragontome.screens.CreditsScreen
+import com.moke.dragontome.screens.NotesScreen
 import com.moke.dragontome.screens.SpellsScreen
 import com.moke.dragontome.state.AppViewModel
 import com.moke.dragontome.ui.theme.primaryContainerLight
@@ -67,7 +68,7 @@ fun LocalNavBar(
                 selected = selectedItem == 1,
                 onClick = {
                     selectedItem = 1
-                    //Navigate to the Campaigns Screen on click
+                    //Navigate to the Notes Screen on click
                     navController.navigate(DragonTomeLocalScreens.Notes.name)
                 }
             )
@@ -142,7 +143,7 @@ fun DragonTomeApp(
                 SpellsScreen(context = context, appViewModel)
             }
             composable(route = DragonTomeLocalScreens.Notes.name) {
-                //NotesScreen()
+                NotesScreen(appViewModel = appViewModel)
             }
             composable(route = DragonTomeLocalScreens.Credits.name){
                 CreditsScreen()

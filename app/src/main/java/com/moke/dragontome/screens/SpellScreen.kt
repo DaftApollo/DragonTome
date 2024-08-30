@@ -96,8 +96,15 @@ Box(modifier = Modifier.fillMaxSize()) {
         }
         Row(modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 5.dp), horizontalArrangement = Arrangement.End) {
-            
+            .padding(vertical = 5.dp, horizontal = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            Column(Modifier.fillMaxWidth(0.8f)) {
+                Text(text = "Spellbook", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                Divider(
+                    thickness = 1.dp,
+                    modifier = Modifier.padding(top = 5.dp),
+                    color = Color.Black
+                )
+            }
             IconButton(onClick = {openFilterMenu = true  },
                 modifier = Modifier
                     .background(color = primaryContainerLight, shape = RoundedCornerShape(8.dp))
@@ -541,7 +548,9 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
                     }
 
                     Spacer(modifier = Modifier.padding(vertical = 10.dp))
-                    Text(text = "Spell School:", modifier = Modifier.padding(horizontal = 20.dp).align(alignment = Alignment.Start))
+                    Text(text = "Spell School:", modifier = Modifier
+                        .padding(horizontal = 20.dp)
+                        .align(alignment = Alignment.Start))
                     Divider(thickness = 1.dp, modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp), color = Color.LightGray)
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
 
@@ -781,7 +790,9 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
                         )
                     }
                     Spacer(modifier = Modifier.padding(vertical = 10.dp))
-                    Text(text = "Spell Name:", modifier = Modifier.padding(horizontal = 20.dp).align(alignment = Alignment.Start))
+                    Text(text = "Spell Name:", modifier = Modifier
+                        .padding(horizontal = 20.dp)
+                        .align(alignment = Alignment.Start))
                     Divider(thickness = 1.dp, modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp), color = Color.LightGray)
                     TextField(value = titleSearch, onValueChange = {
                         titleSearch = it
@@ -794,7 +805,9 @@ fun FilterDialog(appViewModel: AppViewModel, onDismissRequest: () -> Unit){
                     )
 
                     Spacer(modifier = Modifier.padding(vertical = 10.dp))
-                    Text(text = "Spell Description:", modifier = Modifier.padding(horizontal = 20.dp).align(alignment = Alignment.Start))
+                    Text(text = "Spell Description:", modifier = Modifier
+                        .padding(horizontal = 20.dp)
+                        .align(alignment = Alignment.Start))
                     Divider(thickness = 1.dp, modifier = Modifier.padding(horizontal = 20.dp, vertical = 5.dp), color = Color.LightGray)
                     TextField(value = descriptionSearch, onValueChange = {
                         descriptionSearch = it

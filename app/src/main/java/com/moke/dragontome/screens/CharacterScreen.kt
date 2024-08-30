@@ -44,6 +44,7 @@ import com.moke.dragontome.state.AppViewModel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -115,7 +116,15 @@ fun CharacterList(
     refreshFlag: Boolean,
     refreshContent: () -> Unit = {}
     ){
-    LazyColumn (modifier = modifier.padding(bottom = 85.dp), contentPadding = PaddingValues(all = 5.dp)) {
+    Column(Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 10.dp)) {
+        Text(text = "Characters", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+        androidx.compose.material3.Divider(
+            thickness = 1.dp,
+            modifier = Modifier.padding(top = 5.dp),
+            color = Color.Black
+        )
+    }
+    LazyColumn (modifier = modifier.padding(bottom = 85.dp, top = 50.dp), contentPadding = PaddingValues(all = 5.dp)) {
         items(characterSheetList) {
                 characterSheet ->
             CharacterSheetCard(

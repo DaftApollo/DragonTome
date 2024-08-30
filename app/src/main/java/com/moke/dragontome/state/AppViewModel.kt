@@ -3,11 +3,15 @@ package com.moke.dragontome.state
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.moke.dragontome.data.CharacterSheet
 import com.moke.dragontome.data.CharacterSheetHolder
 import com.moke.dragontome.data.JSONSheet
+import com.moke.dragontome.data.Note
+import com.moke.dragontome.data.NoteDao
+import com.moke.dragontome.data.NoteDatabase
 import com.moke.dragontome.data.SheetDao
 import com.moke.dragontome.data.SheetDatabase
 import com.moke.dragontome.data.Spell
@@ -22,6 +26,7 @@ import kotlinx.serialization.json.Json
 class AppViewModel(context: Context) : ViewModel() {
 
     var currentCharacter:CharacterSheetHolder? = null
+    var currentNote:Note? = null
     private val spellDB = SpellDatabase.getDatabase(context = context)
     val spellDao = spellDB.spellDao()
     var spellList: List<Spell> = emptyList()
@@ -32,10 +37,16 @@ class AppViewModel(context: Context) : ViewModel() {
     val sheetDao = sheetDB.sheetDao()
     var sheetList: List<CharacterSheetHolder> = emptyList()
 
+    private val noteDB = NoteDatabase.getDatabase(context = context)
+    val noteDao = noteDB.noteDao()
+    var noteList: List<Note> = emptyList()
+
+
     init {
         viewModelScope.launch{
             spellList = populateSpells(spellDao)
             sheetList = populateSheets(sheetDao)
+            noteList = populateNotes(noteDao)
         }
     }
 
@@ -58,6 +69,14 @@ class AppViewModel(context: Context) : ViewModel() {
             characterSheetList = characterSheetList.plus(CharacterSheetHolder(characterSheet = characterSheet, id = it.id))
         }
         return characterSheetList
+    }
+
+    suspend fun populateNotes(noteDao: NoteDao): List<Note>{
+        var noteList: List<Note> = emptyList()
+
+        noteList = noteDao.getAllNotes()
+
+        return noteList
     }
 
     fun addSpell(additionMode: Boolean, spell: Spell, characterSheet: CharacterSheet? =  if (currentCharacter != null) currentCharacter!!.characterSheet else null){
@@ -142,6 +161,35 @@ class AppViewModel(context: Context) : ViewModel() {
             //Refresh the sheetlist with the sheets from the database
             sheetList = populateSheets(sheetDao)
             refreshContent()
+        }
+    }
+
+    fun createNote(title:String){
+        var id:Int = 1
+        if(!noteList.isEmpty()){
+            for (note in noteList) {
+                if (note.id >= id)
+                    id = note.id + 1
+            }
+        }
+        GlobalScope.launch {
+            noteDao.insert(Note(id = id, title = title, lastUpdated = System.currentTimeMillis()))
+            noteList = populateNotes(noteDao)
+            Log.d("debug","Created a note. Notelist: ${noteList}")
+        }
+    }
+
+    fun removeNote(note:Note){
+        GlobalScope.launch {
+            noteDao.delete(note)
+            noteList = populateNotes(noteDao)
+        }
+    }
+
+    fun updateNote(note: Note){
+        GlobalScope.launch {
+            noteDao.update(note)
+            noteList = populateNotes(noteDao)
         }
     }
 
