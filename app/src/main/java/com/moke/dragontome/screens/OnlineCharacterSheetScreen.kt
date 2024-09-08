@@ -67,15 +67,18 @@ import com.moke.dragontome.data.CharacterClass
 import com.moke.dragontome.data.CharacterSheet
 import com.moke.dragontome.data.CharacterSheetInitializer
 import com.moke.dragontome.data.CharacterStat
+import com.moke.dragontome.data.FeatureStringListWrapper
+import com.moke.dragontome.data.FeatureStringWrapper
 import com.moke.dragontome.data.FirebaseObject
 import com.moke.dragontome.data.IntWrapper
+import com.moke.dragontome.data.LevelUpHandler
 import com.moke.dragontome.data.Message
 import com.moke.dragontome.data.OnlineCharacterSheetHolder
 import com.moke.dragontome.data.Spell
 import com.moke.dragontome.data.StatList
 import com.moke.dragontome.data.StringListWrapper
 import com.moke.dragontome.data.StringWrapper
-import com.moke.dragontome.screens.characterSheetScreens.*
+import com.moke.dragontome.screens.characterSheetScreens
 import com.moke.dragontome.state.AppViewModel
 import com.moke.dragontome.state.CampaignViewModel
 import com.moke.dragontome.ui.theme.addColor
@@ -115,9 +118,9 @@ fun OnlineCharacterSheetScreen(
             var characterClassPopup: Boolean by remember { mutableStateOf(false) }
 
             NavHost(navController = navController,
-                startDestination = Stats.name,
+                startDestination = characterSheetScreens.Stats.name,
                 modifier = Modifier.padding(innerPadding)) {
-                composable(route = Stats.name) {
+                composable(route = characterSheetScreens.Stats.name) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -222,7 +225,7 @@ fun OnlineCharacterSheetScreen(
                                             characterClassPopup = false
                                             characterSheetInitializer.refreshProficiencyBonus()
                                         },
-                                        updateFunction = updateFunction)
+                                        updateFunction = updateFunction, levelUpHandler = LevelUpHandler)
                                 }
                             }
 
@@ -326,7 +329,7 @@ fun OnlineCharacterSheetScreen(
                     }
                 }
 
-                composable(route = AbilitiesAndInventory.name) {
+                composable(route = characterSheetScreens.AbilitiesAndInventory.name) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -348,7 +351,7 @@ fun OnlineCharacterSheetScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         )
                         {
-                            OnlineStringWindow(
+                            OnlineFeatureStringWindow(
                                 characterSheet = characterSheet,
                                 stringList = characterSheet.characterFeaturesAndTraits,
                                 refresherFlag = refreshFlag,
@@ -667,7 +670,7 @@ fun OnlineCharacterSheetScreen(
                     }
                 }
 
-                composable(route = Spells.name) {
+                composable(route = characterSheetScreens.Spells.name) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -718,7 +721,7 @@ fun OnlineCharacterSheetScreen(
                         }
                     }
                 }
-                composable(route = Info.name) {
+                composable(route = characterSheetScreens.Info.name) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -4669,6 +4672,133 @@ fun OnlineStringWindow(
                     onClick = {
                         stringList.stringList =
                             stringList.stringList.plus(StringWrapper())
+                        updateFunction()
+
+                        refreshContent()
+                    },
+                    modifier = Modifier
+                        .size(size = 20.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.Add,
+                        contentDescription = "Add Class",
+                        tint = Color.DarkGray,
+                        modifier = Modifier
+                            .border(
+                                width = 1.dp,
+                                color = Color.DarkGray,
+                                shape = RoundedCornerShape(size = 5.dp)
+                            )
+                            .background(color = addColor, shape = RoundedCornerShape(size = 5.dp))
+                    )
+                }
+                androidx.compose.material.IconButton(
+                    enabled = isEditable,
+                    onClick = {
+                        deletionMode = !deletionMode
+                    },
+                    modifier = Modifier
+                        .size(size = 20.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.Clear,
+                        contentDescription = "Remove Class",
+                        tint = Color.DarkGray,
+                        modifier = Modifier
+                            .border(
+                                width = 1.dp,
+                                color = Color.DarkGray,
+                                shape = RoundedCornerShape(size = 5.dp)
+                            )
+                            .background(
+                                color = removeColor,
+                                shape = RoundedCornerShape(size = 5.dp)
+                            )
+                    )
+                }
+            }
+        }
+
+    }
+}
+
+@Composable
+fun OnlineFeatureStringWindow(
+    characterSheet: CharacterSheet = theoChar.characterSheet,
+    stringList: FeatureStringListWrapper,
+    refresherFlag: Boolean = false,
+    refreshContent: () -> Unit = {},
+    title:String = "",
+    updateFunction: () -> Unit = {},
+    isEditable: Boolean
+){
+
+    var deletionMode by remember {
+        mutableStateOf(false)
+    }
+
+    Card (modifier = Modifier
+        .fillMaxWidth()
+        .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(size = 5.dp)),
+        backgroundColor = primaryContainerLight
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row (modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 5.dp), horizontalArrangement = Arrangement.Center ) {
+                Text(text = title, textAlign = TextAlign.Center)
+            }
+            Divider(modifier = Modifier.padding(horizontal = 10.dp), color = Color.Black)
+            for(entry in stringList.stringList){
+
+                Row (modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    if (deletionMode) {
+                        androidx.compose.material.IconButton(
+                            enabled = isEditable,
+                            onClick = {
+                                stringList.stringList = stringList.stringList.minus(entry)
+                                updateFunction()
+                                refreshContent()
+                            },
+                            modifier = Modifier
+                                .padding(start = 15.dp)
+                                .size(size = 16.dp)
+                        ) {
+                            Icon(Icons.Filled.Delete, contentDescription = "Delete ${title}")
+                        }
+                    }
+
+                    var text by remember {
+                        mutableStateOf(entry.value)
+                    }
+
+                    BasicTextField(
+                        enabled = isEditable,
+                        value = text, onValueChange = {
+                            text = it
+                            entry.value = text
+                            updateFunction()
+                        },
+                        modifier = Modifier
+                            .padding(horizontal = 20.dp, vertical = 5.dp)
+                            .background(
+                                color = Color.LightGray,
+                                shape = RoundedCornerShape(size = 5.dp)
+                            )
+                            .padding(horizontal = 5.dp)
+                    )
+
+                }
+                Divider(modifier = Modifier.padding(horizontal = 15.dp), color = Color.LightGray)
+            }
+            Row (modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 10.dp, top = 5.dp), horizontalArrangement = Arrangement.SpaceEvenly ) {
+                androidx.compose.material.IconButton(
+                    enabled = isEditable,
+                    onClick = {
+                        stringList.stringList =
+                            stringList.stringList.plus(FeatureStringWrapper())
                         updateFunction()
 
                         refreshContent()

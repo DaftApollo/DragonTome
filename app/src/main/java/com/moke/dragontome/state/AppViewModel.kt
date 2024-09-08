@@ -8,6 +8,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.moke.dragontome.data.CharacterSheet
 import com.moke.dragontome.data.CharacterSheetHolder
+import com.moke.dragontome.data.Feature
+import com.moke.dragontome.data.FeatureDao
+import com.moke.dragontome.data.FeatureDatabase
 import com.moke.dragontome.data.JSONSheet
 import com.moke.dragontome.data.Note
 import com.moke.dragontome.data.NoteDao
@@ -23,10 +26,22 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
+
+/*App View Model holds a lot of the state of the app. It also holds the lists that are derived from
+the databases that hold the notes, character sheets, spells, and autoleveling character features.
+
+I ended up using a tool called SQLite Viewer Editor to generate all of the premade stuff for the spell
+and feature databases. It's also useful for setting up the database structure. One constant issue I've
+found when making the databases is that it expects a certain structure to the schema, and will crash
+because it doesn't match the exact structure that it imposes on the new database. I've yet to find
+the place where I can change what it expects, so I just change the structure of the database to match
+what it expects. This usually just requires changing the order of the fields.
+*/
 class AppViewModel(context: Context) : ViewModel() {
 
     var currentCharacter:CharacterSheetHolder? = null
     var currentNote:Note? = null
+
     private val spellDB = SpellDatabase.getDatabase(context = context)
     val spellDao = spellDB.spellDao()
     var spellList: List<Spell> = emptyList()
@@ -41,12 +56,17 @@ class AppViewModel(context: Context) : ViewModel() {
     val noteDao = noteDB.noteDao()
     var noteList: List<Note> = emptyList()
 
+    private val featureDB = FeatureDatabase.getDatabase(context = context)
+    val featureDao = featureDB.featureDao()
+    var featureList: List<Feature> = emptyList()
+
 
     init {
         viewModelScope.launch{
             spellList = populateSpells(spellDao)
             sheetList = populateSheets(sheetDao)
             noteList = populateNotes(noteDao)
+            featureList = populateFeatures(featureDao)
         }
     }
 
@@ -77,6 +97,14 @@ class AppViewModel(context: Context) : ViewModel() {
         noteList = noteDao.getAllNotes()
 
         return noteList
+    }
+
+    suspend fun populateFeatures(featureDao: FeatureDao): List<Feature>{
+        var featureList: List<Feature> = emptyList()
+
+        featureList = featureDao.getAllFeatures()
+
+        return featureList
     }
 
     fun addSpell(additionMode: Boolean, spell: Spell, characterSheet: CharacterSheet? =  if (currentCharacter != null) currentCharacter!!.characterSheet else null){

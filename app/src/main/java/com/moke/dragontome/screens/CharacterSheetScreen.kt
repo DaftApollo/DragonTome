@@ -1,5 +1,6 @@
 package com.moke.dragontome.screens
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -30,6 +31,11 @@ import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.Snackbar
+import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.SnackbarHost
+import androidx.compose.material.SnackbarHostState
+import androidx.compose.material.SnackbarResult
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.Text
@@ -43,10 +49,13 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +63,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -71,8 +81,12 @@ import com.moke.dragontome.data.CharacterSheet
 import com.moke.dragontome.data.CharacterSheetHolder
 import com.moke.dragontome.data.CharacterSheetInitializer
 import com.moke.dragontome.data.CharacterStat
+import com.moke.dragontome.data.CharacterSubClass
 import com.moke.dragontome.data.ClassLevel
+import com.moke.dragontome.data.FeatureStringListWrapper
+import com.moke.dragontome.data.FeatureStringWrapper
 import com.moke.dragontome.data.IntWrapper
+import com.moke.dragontome.data.LevelUpHandler
 import com.moke.dragontome.data.Spell
 import com.moke.dragontome.data.SpellBook
 import com.moke.dragontome.data.StatEntry
@@ -86,6 +100,7 @@ import com.moke.dragontome.ui.theme.onPrimaryContainerLight
 import com.moke.dragontome.ui.theme.primaryContainerLight
 import com.moke.dragontome.ui.theme.primaryLight
 import com.moke.dragontome.ui.theme.removeColor
+import kotlinx.coroutines.launch
 import java.lang.NumberFormatException
 
 
@@ -94,12 +109,12 @@ var theoChar:CharacterSheetHolder = CharacterSheetHolder(CharacterSheet("Theo",
    "Acolyte",
    "Chaotic Gooddddddddddddddddddd",
    100,
-   listOf(ClassLevel(characterClass = CharacterClass.ARTIFICER, 1), ClassLevel(CharacterClass.BARBARIAN, 3), ClassLevel(CharacterClass.BLOODHUNTER, 7)),
+   listOf(ClassLevel(characterClass = CharacterClass.ARTIFICER, classLevel = 1), ClassLevel(CharacterClass.BARBARIAN, classLevel = 3), ClassLevel(CharacterClass.BLOODHUNTER, classLevel = 7)),
    StringListWrapper(),
    StringListWrapper(),
    StringListWrapper(),
    StringListWrapper(),
-   StringListWrapper(),
+   FeatureStringListWrapper(),
    IntWrapper(0),
    StatList(),
    StatList(),
@@ -243,6 +258,7 @@ fun CharacterNavBar(
 
 
 
+@SuppressLint("RememberReturnType")
 @Composable
 fun CharacterSheetScreen(
    characterSheetHolder: CharacterSheetHolder,
@@ -252,6 +268,8 @@ fun CharacterSheetScreen(
 ){
    var characterSheet = characterSheetHolder.characterSheet
    var updateFunction: () -> Unit = { appViewModel.updateDatabase(characterSheet = characterSheet)}
+   var levelUpHandler = LevelUpHandler
+
    //Refresh flag to get the various composables to update properly. Previous issue caused stats in one
    //composable to not update when a relevant stat in a different composable updated. By passing in
    //the refresh flag to each function, when that flag is changed by a stat modification, it calls
@@ -269,7 +287,14 @@ fun CharacterSheetScreen(
 
       characterSheetInitializer.initializeCharacterSheet()
 
-      Scaffold (topBar = { CharacterNavBar(navController = navController) }) { innerPadding ->
+      val scope = rememberCoroutineScope()
+      val snackBarHostState = remember { SnackbarHostState() }
+
+
+      Scaffold (topBar = { CharacterNavBar(navController = navController) },
+         snackbarHost = {
+            SnackbarHost(hostState = snackBarHostState)
+         }) { innerPadding ->
          var characterClassPopup: Boolean by remember { mutableStateOf(false) }
 
          NavHost(navController = navController,
@@ -281,6 +306,11 @@ fun CharacterSheetScreen(
                      .fillMaxSize()
                      .verticalScroll(state = rememberScrollState())
                ) {
+
+                  var updateCharacterFeatures by remember {
+                     mutableStateOf(false)
+                  }
+
                   //Background Image
                   Image(
                      painter = painterResource(id = R.drawable.grunge_background),
@@ -343,7 +373,9 @@ fun CharacterSheetScreen(
                            //Class Field
 
                            TextButton(
-                              onClick = { characterClassPopup = true },
+                              onClick = {
+                                 characterClassPopup = true
+                                        },
                               modifier = modifier
                                  .background(
                                     color = primaryContainerLight,
@@ -354,9 +386,17 @@ fun CharacterSheetScreen(
                               var levelText: String = ""
                               var count = 0
                               for (pair in characterSheet.characterClass) {
-                                 levelText = levelText + "Level ${pair.classLevel} ${
-                                    pair.characterClass.toString().lowercase().capitalize()
-                                 }"
+                                 levelText = levelText + "Level ${pair.classLevel}" +
+                                         if(pair.characterSubClass != CharacterSubClass.CUSTOM){" ${pair.characterSubClass.toString()
+                                            .lowercase()
+                                            .capitalize()
+                                            .replace('_', ' ')
+                                            .replace(oldValue = "sorcerer", "")
+                                            .replace(oldValue = "barbarian", "")}" +
+                                                 " ${pair.characterClass.toString().lowercase().capitalize()}"}
+
+                                 else " ${pair.characterClass.toString().lowercase().capitalize()}"
+
 
                                  count++
 
@@ -377,8 +417,26 @@ fun CharacterSheetScreen(
                               onDismissRequest = {
                                  characterClassPopup = false
                                  characterSheetInitializer.refreshProficiencyBonus()
+                                 levelUpHandler.setModifierState(characterSheet.characterClass)
+                                 scope.launch {
+                                    val result = snackBarHostState.showSnackbar(
+                                       message = "Update character features automatically?",
+                                       actionLabel = "Update",
+                                       duration = SnackbarDuration.Long
+                                    )
+                                    when (result){
+                                       SnackbarResult.ActionPerformed -> {
+                                          Log.d("debug", "Will perform an action here!")
+                                          levelUpHandler.updateCharacterFeatures(appViewModel)
+                                       }
+                                       SnackbarResult.Dismissed -> {
+
+                                       }
+                                    }
+                                 }
                               },
-                              updateFunction = updateFunction)
+                              updateFunction = updateFunction,
+                              levelUpHandler = levelUpHandler)
                         }
                      }
 
@@ -490,7 +548,7 @@ fun CharacterSheetScreen(
                      horizontalAlignment = Alignment.CenterHorizontally
                   )
                   {
-                     StringWindow(
+                     FeatureStringWindow(
                         characterSheet = characterSheet,
                         stringList = characterSheet.characterFeaturesAndTraits,
                         refresherFlag = refreshFlag,
@@ -983,7 +1041,8 @@ fun CharacterSheetScreen(
 fun ClassPopupWindow(
    characterSheet: CharacterSheet,
    onDismissRequest: () -> Unit = {},
-   updateFunction: () -> Unit = {}
+   updateFunction: () -> Unit = {},
+   levelUpHandler:LevelUpHandler
 ){
    Dialog(onDismissRequest = onDismissRequest) {
       Card (
@@ -1024,9 +1083,36 @@ fun ClassPopupWindow(
                      mutableStateOf(false)
                   }
 
+                  var subclassExpanded by remember {
+                     mutableStateOf(false)
+                  }
+
                   var classText by remember {
                      mutableStateOf(characterSheet.characterClass[characterSheet.characterClass.indexOf(classPair)].characterClass)
                   }
+
+                  var subclassText by remember {
+                     mutableStateOf(characterSheet.characterClass[characterSheet.characterClass.indexOf(classPair)].characterSubClass)
+                  }
+
+                  val availableSubclasses:List<CharacterSubClass> = when(classPair.characterClass){
+                     CharacterClass.CUSTOM -> listOf(CharacterSubClass.CUSTOM)
+                     CharacterClass.ARTIFICER -> levelUpHandler.artificerSubclasses
+                     CharacterClass.BARBARIAN -> levelUpHandler.barbarianSubclasses
+                     CharacterClass.BARD -> levelUpHandler.bardSubclasses
+                     CharacterClass.BLOODHUNTER -> levelUpHandler.bloodHunterSubclasses
+                     CharacterClass.CLERIC -> levelUpHandler.clericSubclasses
+                     CharacterClass.DRUID -> levelUpHandler.druidSubclasses
+                     CharacterClass.FIGHTER -> levelUpHandler.fighterSubclasses
+                     CharacterClass.MONK -> levelUpHandler.monkSubclasses
+                     CharacterClass.PALADIN -> levelUpHandler.paladinSubclasses
+                     CharacterClass.RANGER -> levelUpHandler.rangerSubclasses
+                     CharacterClass.ROGUE -> levelUpHandler.rogueSubclasses
+                     CharacterClass.SORCERER -> levelUpHandler.sorcererSubclasses
+                     CharacterClass.WARLOCK -> levelUpHandler.warlockSubclasses
+                     CharacterClass.WIZARD -> levelUpHandler.wizardSubclasses
+                  }
+
 
                   if(deletionMode){
                      IconButton(
@@ -1049,17 +1135,59 @@ fun ClassPopupWindow(
                         )
                   }
 
-                  Text(text = classText.toString(), fontSize = 13.sp)
+                  Text(text = classText.toString().lowercase().capitalize(), fontSize = 13.sp)
                   
                   DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                      //For loop creates a menu item in the dropdown for each class value
                      for (charClass in CharacterClass.entries){
-                        DropdownMenuItem(text = { Text(text = charClass.name) }, onClick = {
-                           classText = charClass
-                           classPair.characterClass = classText
-                           updateFunction()
-                           expanded = false
-                        })
+                        var alreadyContains:Boolean = false
+                        for (existingClass in characterSheet.characterClass){
+                           if (existingClass.characterClass == charClass)
+                              alreadyContains = true
+                        }
+                        if(!alreadyContains){
+                           DropdownMenuItem(text = { Text(text = charClass.name) }, onClick = {
+                              classText = charClass
+                              classPair.characterClass = classText
+                              classPair.characterSubClass = CharacterSubClass.CUSTOM
+                              subclassText = CharacterSubClass.CUSTOM
+                              updateFunction()
+                              expanded = false
+                           })
+                        }
+                     }
+                  }
+
+                  if(classText != CharacterClass.CUSTOM){
+                     if(classPair.characterSubClass!= CharacterSubClass.CUSTOM){
+                        Text(
+                           text = subclassText.toString().lowercase().capitalize().replace('_', ' ')
+                              .replace(oldValue = "sorcerer", "")
+                              .replace(oldValue = "barbarian", ""), fontSize = 13.sp
+                        )
+                     }
+
+                     IconButton(
+                        onClick = { subclassExpanded = true },
+                        modifier = Modifier.size(size = 20.dp)
+                     ) {
+                        Icon(
+                           Icons.Filled.Menu,
+                           contentDescription = "List Subclasses",
+                           modifier = Modifier.size(size = 20.dp)
+                        )
+                     }
+                  }
+
+                  DropdownMenu(expanded = subclassExpanded, onDismissRequest = { subclassExpanded = false }) {
+                     //For loop creates a menu item in the dropdown for each class value
+                     for (charClass in availableSubclasses){
+                           DropdownMenuItem(text = { Text(text = charClass.name.lowercase().capitalize().replace('_', ' ').replace(oldValue = "sorcerer", "").replace(oldValue = "barbarian", "")) }, onClick = {
+                              subclassText = charClass
+                              classPair.characterSubClass = subclassText
+                              updateFunction()
+                              subclassExpanded = false
+                           })
                      }
                   }
 
@@ -1104,7 +1232,7 @@ fun ClassPopupWindow(
                IconButton(
                   onClick = {
                      characterClassState =
-                        characterClassState.plus(ClassLevel(CharacterClass.ARTIFICER, 1))
+                        characterClassState.plus(ClassLevel(CharacterClass.CUSTOM, classLevel = 1))
                      characterSheet.characterClass = characterClassState
                      updateFunction()
                   },
@@ -1210,7 +1338,7 @@ fun BasicInfoWindow(
                         shape = RoundedCornerShape(size = 5.dp)
                      )
                      .padding(start = 3.dp, end = 5.dp)
-                     .sizeIn(maxWidth =90.dp)
+                     .sizeIn(maxWidth = 90.dp)
                )
                Text(
                   text = "Race: ",
@@ -2221,7 +2349,6 @@ fun AttributesWindow(
 @Composable
    fun StatEntryPopup(
       statList: StatList, //Statlist from the character sheet
-      //rememberedStatList: StatList, //Remembered statlist, cause that's apparently the only easy way to change the character sheet one
       statName: String = "Proficiency Bonus:", //Text value for the popup
       delegateStat: StatList = theoChar.characterSheet.strength, //Statlist to get the summed total
       onDismissRequest: () -> Unit = {},
@@ -2250,7 +2377,9 @@ fun AttributesWindow(
                Text(text = statName,
                   textAlign = TextAlign.Center,
                   modifier = Modifier.padding(all = 10.dp))
-               Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 50.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+               Row(modifier = Modifier
+                  .fillMaxWidth()
+                  .padding(horizontal = 50.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                   Text(text = "Bonus:")
                   Text(text = "Source:")
                }
@@ -4654,6 +4783,123 @@ fun StringWindow(
                onClick = {
                   stringList.stringList =
                      stringList.stringList.plus(StringWrapper())
+                  updateFunction()
+
+                  refreshContent()
+               },
+               modifier = Modifier
+                  .size(size = 20.dp)
+            ) {
+               Icon(
+                  Icons.Filled.Add,
+                  contentDescription = "Add Class",
+                  tint = Color.DarkGray,
+                  modifier = Modifier
+                     .border(
+                        width = 1.dp,
+                        color = Color.DarkGray,
+                        shape = RoundedCornerShape(size = 5.dp)
+                     )
+                     .background(color = addColor, shape = RoundedCornerShape(size = 5.dp))
+               )
+            }
+            IconButton(
+               onClick = {
+                  deletionMode = !deletionMode
+               },
+               modifier = Modifier
+                  .size(size = 20.dp)
+            ) {
+               Icon(
+                  Icons.Filled.Clear,
+                  contentDescription = "Remove Class",
+                  tint = Color.DarkGray,
+                  modifier = Modifier
+                     .border(
+                        width = 1.dp,
+                        color = Color.DarkGray,
+                        shape = RoundedCornerShape(size = 5.dp)
+                     )
+                     .background(color = removeColor, shape = RoundedCornerShape(size = 5.dp))
+               )
+            }
+         }
+      }
+
+   }
+}
+
+@Composable
+fun FeatureStringWindow(
+   characterSheet: CharacterSheet,
+   stringList: FeatureStringListWrapper,
+   refresherFlag: Boolean = false,
+   refreshContent: () -> Unit = {},
+   title:String = "",
+   updateFunction: () -> Unit = {}
+){
+
+   var deletionMode by remember {
+      mutableStateOf(false)
+   }
+
+   Card (modifier = Modifier
+      .fillMaxWidth()
+      .border(width = 2.dp, color = Color.Black, shape = RoundedCornerShape(size = 5.dp)),
+      backgroundColor = primaryContainerLight
+   ) {
+      Column(modifier = Modifier.fillMaxWidth()) {
+         Row (modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 5.dp), horizontalArrangement = Arrangement.Center ) {
+            Text(text = title, textAlign = TextAlign.Center)
+         }
+         Divider(modifier = Modifier.padding(horizontal = 10.dp), color = Color.Black)
+         for(entry in stringList.stringList){
+
+            Row (modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+               if (deletionMode) {
+                  IconButton(
+                     onClick = {
+                        stringList.stringList = stringList.stringList.minus(entry)
+                        updateFunction()
+                        refreshContent()
+                     },
+                     modifier = Modifier
+                        .padding(start = 15.dp)
+                        .size(size = 16.dp)
+                  ) {
+                     Icon(Icons.Filled.Delete, contentDescription = "Delete ${title}")
+                  }
+               }
+
+               var text by remember {
+                  mutableStateOf(entry.value)
+               }
+
+               BasicTextField(
+                  value = text, onValueChange = {
+                     text = it
+                     entry.value = text
+                     updateFunction()
+
+                  },
+                  modifier = Modifier
+                     .padding(horizontal = 20.dp, vertical = 5.dp)
+                     .background(color = Color.LightGray, shape = RoundedCornerShape(size = 5.dp))
+                     .padding(horizontal = 5.dp)
+               )
+
+            }
+            Divider(modifier = Modifier.padding(horizontal = 15.dp), color = Color.LightGray)
+         }
+         Row (modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 10.dp, top = 5.dp), horizontalArrangement = Arrangement.SpaceEvenly ) {
+            IconButton(
+               onClick = {
+                  stringList.stringList =
+                     stringList.stringList.plus(FeatureStringWrapper())
                   updateFunction()
 
                   refreshContent()
